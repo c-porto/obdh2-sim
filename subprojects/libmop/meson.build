@@ -44,3 +44,4 @@ libmop = library(
   pic: true,
 )
 
+libmop_dep = declare_dependency(include_directories: mop_inc, link_with: libmop)

@@ -1,7 +1,7 @@
 project(
   'obdh2_sim',
   'c',
-  version: '0.0.1',
+  version: '0.0.5',
   default_options: [
     'warning_level=3',
     'c_std=gnu11',
@@ -22,8 +22,14 @@ sqlite3 = dependency('sqlite3')
 
 zmq = dependency('libzmq')
 
+libmop = subproject(
+  'libmop',
+  default_options: 'default_library=static',
+)
+
 obdh2_sim_deps += zmq
 obdh2_sim_deps += sqlite3
+obdh2_sim_deps += libmop.get_variable('libmop_dep')
 
 c_args = [
   '-Wno-unused-parameter',
@@ -53,4 +59,6 @@ inst_srcs_dir = get_option('src_install_dir')
 if inst_srcs
   install_subdir('include', install_dir: inst_srcs_dir)
   install_subdir('src', install_dir: inst_srcs_dir)
+  install_subdir('subprojects', install_dir: inst_srcs_dir)
+  install_data('meson.build', install_dir: inst_srcs_dir)
 endif
