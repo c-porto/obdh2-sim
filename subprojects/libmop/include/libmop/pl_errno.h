@@ -14,6 +14,7 @@ enum pl_errno {
 	PL_ERRNO_UNKNOWN = 3,
 	PL_ERRNO_UNSUPPORTED_FN = 4,
 	PL_ERRNO_IO = 5,
+	PL_ERRNO_DATA = 6,
 };
 
 #ifdef __cplusplus

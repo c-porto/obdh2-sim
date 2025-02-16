@@ -43,13 +43,14 @@ struct payload {
 	char name[PAYLOAD_NAME_MAX];
 	void *payload_data;
 	int (*init)(struct payload *pl);
-	int (*write_data)(struct payload *pl, uint8_t type, uint8_t *data,
+	int (*write_data)(struct payload *pl, const uint8_t type, uint8_t *data,
 			  uint16_t size);
-	int (*read_data)(struct payload *pl, uint8_t type, uint8_t *data,
+	int (*read_data)(struct payload *pl, const uint8_t type, uint8_t *data,
 			 uint16_t size);
-	int (*write_cmd)(struct payload *pl, uint8_t cmd, uint8_t *cmd_args,
-			 uint16_t args_size);
-	int (*set_clock)(struct payload *pl, struct payload_timestamp *ts);
+	int (*write_cmd)(struct payload *pl, const uint8_t cmd,
+			 uint8_t *cmd_args, uint16_t args_size);
+	int (*set_clock)(struct payload *pl,
+			 const struct payload_timestamp *ts);
 	int (*get_clock)(struct payload *pl, struct payload_timestamp *ts);
 	int (*enable)(struct payload *pl);
 	int (*disable)(struct payload *pl);
@@ -130,7 +131,7 @@ int payload_init(struct payload *pl);
  *
  * @return Error code from pl_errno enum.
  */
-int payload_write_data(struct payload *pl, uint8_t type, uint8_t *data,
+int payload_write_data(struct payload *pl, const uint8_t type, uint8_t *data,
 		       uint16_t size);
 
 /**
@@ -150,7 +151,7 @@ int payload_write_data(struct payload *pl, uint8_t type, uint8_t *data,
  *
  * @return Error code from pl_errno enum.
  */
-int payload_read_data(struct payload *pl, uint8_t type, uint8_t *data,
+int payload_read_data(struct payload *pl, const uint8_t type, uint8_t *data,
 		      uint16_t size);
 
 /**
@@ -170,7 +171,7 @@ int payload_read_data(struct payload *pl, uint8_t type, uint8_t *data,
  *
  * @return Error code from pl_errno enum.
  */
-int payload_write_cmd(struct payload *pl, uint8_t cmd, uint8_t *cmd_args,
+int payload_write_cmd(struct payload *pl, const uint8_t cmd, uint8_t *cmd_args,
 		      uint16_t args_size);
 
 /**
@@ -184,7 +185,7 @@ int payload_write_cmd(struct payload *pl, uint8_t cmd, uint8_t *cmd_args,
  *
  * @return Error code from pl_errno enum.
  */
-int payload_set_clock(struct payload *pl, struct payload_timestamp *ts);
+int payload_set_clock(struct payload *pl, const struct payload_timestamp *ts);
 
 /**
  * @brief Reads the specified payload clock. Basically calls the payload 

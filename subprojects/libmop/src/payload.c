@@ -12,7 +12,7 @@ int payload_init(struct payload *pl)
 	return err;
 }
 
-int payload_write_data(struct payload *pl, uint8_t type, uint8_t *data,
+int payload_write_data(struct payload *pl, const uint8_t type, uint8_t *data,
 		       uint16_t size)
 {
 	int err = PL_ERRNO_INVALID_ARG;
@@ -23,7 +23,7 @@ int payload_write_data(struct payload *pl, uint8_t type, uint8_t *data,
 	return err;
 }
 
-int payload_read_data(struct payload *pl, uint8_t type, uint8_t *data,
+int payload_read_data(struct payload *pl, const uint8_t type, uint8_t *data,
 		      uint16_t size)
 {
 	int err = PL_ERRNO_INVALID_ARG;
@@ -34,7 +34,7 @@ int payload_read_data(struct payload *pl, uint8_t type, uint8_t *data,
 	return err;
 }
 
-int payload_write_cmd(struct payload *pl, uint8_t cmd, uint8_t *cmd_args,
+int payload_write_cmd(struct payload *pl, const uint8_t cmd, uint8_t *cmd_args,
 		      uint16_t args_size)
 {
 	int err = PL_ERRNO_INVALID_ARG;
@@ -45,7 +45,7 @@ int payload_write_cmd(struct payload *pl, uint8_t cmd, uint8_t *cmd_args,
 	return err;
 }
 
-int payload_set_clock(struct payload *pl, struct payload_timestamp *ts)
+int payload_set_clock(struct payload *pl, const struct payload_timestamp *ts)
 {
 	int err = PL_ERRNO_INVALID_ARG;
 
