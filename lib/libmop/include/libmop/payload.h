@@ -10,6 +10,8 @@
 extern "C" {
 #endif
 
+#define PAYLOAD_NAME_MAX 15U
+
 /**
  * @brief Payload Timestamp structure, used to store time information for 
  * payloads.
@@ -38,7 +40,7 @@ struct payload_ctx {
 struct payload {
 	struct payload_ctx *ctx;
 	uint8_t id;
-	char name[15];
+	char name[PAYLOAD_NAME_MAX];
 	void *payload_data;
 	int (*init)(struct payload *pl);
 	int (*write_data)(struct payload *pl, uint8_t type, uint8_t *data,
