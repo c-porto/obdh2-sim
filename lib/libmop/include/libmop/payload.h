@@ -6,6 +6,10 @@
 
 #include "pl_errno.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Payload Timestamp structure, used to store time information for 
  * payloads.
@@ -26,11 +30,10 @@ struct payload_ctx {
 	/// Probably more state things will be added
 };
 
-
 /**
  * @brief Main Payload structure, includes all information for a given payload,
  * including its driver specific interface, done with function pointers. Could 
- * also be include into a pl_list to facilitate a centralized payload control.
+ * also be include into the pl_list to facilitate a centralized payload control.
  */
 struct payload {
 	struct payload_ctx *ctx;
@@ -48,7 +51,7 @@ struct payload {
 	int (*get_clock)(struct payload *pl, struct payload_timestamp *ts);
 	int (*enable)(struct payload *pl);
 	int (*disable)(struct payload *pl);
-	void *pl_list; /// Reserved for payload list
+	struct payload *next; /**< Used for pl_list */
 };
 
 /**
@@ -215,5 +218,9 @@ int payload_enable(struct payload *pl);
  * @return Error code from pl_errno enum.
  */
 int payload_disable(struct payload *pl);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
