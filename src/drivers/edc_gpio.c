@@ -37,17 +37,17 @@
 
 /* TODO: Unsupported */
 
-int edc_gpio_init(edc_config_t config)
+int edc_gpio_init(edc_config_t *config)
 {
     return 0;
 }
 
-int edc_gpio_set(edc_config_t config)
+int edc_gpio_set(edc_config_t *config)
 {
     return 0;
 }
 
-int edc_gpio_clear(edc_config_t config)
+int edc_gpio_clear(edc_config_t *config)
 {
     return 0;
 }

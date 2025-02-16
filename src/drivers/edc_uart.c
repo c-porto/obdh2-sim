@@ -38,22 +38,22 @@
 
 /* TODO: Unsupported */
 
-int edc_uart_init(edc_config_t config)
+int edc_uart_init(edc_config_t *config)
 {
     return -1;
 }
 
-int edc_uart_write(edc_config_t config, uint8_t *data, uint16_t len)
+int edc_uart_write(edc_config_t *config, uint8_t *data, uint16_t len)
 {
     return -1;
 }
 
-int edc_uart_read(edc_config_t config, uint8_t *data, uint16_t len)
+int edc_uart_read(edc_config_t *config, uint8_t *data, uint16_t len)
 {
     return -1;
 }
 
-int edc_uart_rx_available(edc_config_t config)
+int edc_uart_rx_available(edc_config_t *config)
 {
     return -1;
 }

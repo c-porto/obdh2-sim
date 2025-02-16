@@ -149,7 +149,7 @@ typedef struct
  *
  * \return The status/error code.
  */
-int edc_init(edc_config_t config);
+int edc_init(edc_config_t *config);
 
 /**
  * \brief Enables the EDC module.
@@ -158,7 +158,7 @@ int edc_init(edc_config_t config);
  *
  * \return The status/error code.
  */
-int edc_enable(edc_config_t config);
+int edc_enable(edc_config_t *config);
 
 /**
  * \brief Disables the EDC module.
@@ -167,7 +167,7 @@ int edc_enable(edc_config_t config);
  *
  * \return The status/error code.
  */
-int edc_disable(edc_config_t config);
+int edc_disable(edc_config_t *config);
 
 /**
  * \brief Writes a command to the EDC module.
@@ -178,7 +178,7 @@ int edc_disable(edc_config_t config);
  *
  * \return The status/error code.
  */
-int edc_write_cmd(edc_config_t config, edc_cmd_t cmd);
+int edc_write_cmd(edc_config_t *config, edc_cmd_t cmd);
 
 /**
  * \brief Reads data from the EDC module.
@@ -191,7 +191,7 @@ int edc_write_cmd(edc_config_t config, edc_cmd_t cmd);
  *
  * \return The status/error code.
  */
-int edc_read(edc_config_t config, uint8_t *data, uint16_t len);
+int edc_read(edc_config_t *config, uint8_t *data, uint16_t len);
 
 /**
  * \brief Verifies if the EDC is connected.
@@ -200,7 +200,7 @@ int edc_read(edc_config_t config, uint8_t *data, uint16_t len);
  *
  * \return The status/error code.
  */
-int edc_check_device(edc_config_t config);
+int edc_check_device(edc_config_t *config);
 
 /**
  * \brief Sets the RTC time.
@@ -211,7 +211,7 @@ int edc_check_device(edc_config_t config);
  *
  * \return The status/error code.
  */
-int edc_set_rtc_time(edc_config_t config, uint32_t time);
+int edc_set_rtc_time(edc_config_t *config, uint32_t time);
 
 /**
  * \brief Removes current PTT package from the PTT Package FIFO buffer.
@@ -222,7 +222,7 @@ int edc_set_rtc_time(edc_config_t config, uint32_t time);
  *
  * \return The status/error code.
  */
-int edc_pop_ptt_pkg(edc_config_t config);
+int edc_pop_ptt_pkg(edc_config_t *config);
 
 /**
  * \brief Pauses the PTT decoding task.
@@ -233,7 +233,7 @@ int edc_pop_ptt_pkg(edc_config_t config);
  *
  * \return The status/error code.
  */
-int edc_pause_ptt_task(edc_config_t config);
+int edc_pause_ptt_task(edc_config_t *config);
 
 /**
  * \brief Resumes the PTT decoding task.
@@ -242,7 +242,7 @@ int edc_pause_ptt_task(edc_config_t config);
  *
  * \return The status/error code.
  */
-int edc_resume_ptt_task(edc_config_t config);
+int edc_resume_ptt_task(edc_config_t *config);
 
 /**
  * \brief Starts the ADC sampling task.
@@ -253,7 +253,7 @@ int edc_resume_ptt_task(edc_config_t config);
  *
  * \return The status/error code.
  */
-int edc_start_adc_task(edc_config_t config);
+int edc_start_adc_task(edc_config_t *config);
 
 /**
  * \brief Gets the system state frame.
@@ -275,7 +275,7 @@ int edc_start_adc_task(edc_config_t config);
  *
  * \return The number of read bytes (-1 on error).
  */
-int16_t edc_get_state_pkg(edc_config_t config, uint8_t *status);
+int16_t edc_get_state_pkg(edc_config_t *config, uint8_t *status);
 
 /**
  * \brief Gets the current PTT decoder frame.
@@ -313,7 +313,7 @@ int16_t edc_get_state_pkg(edc_config_t config, uint8_t *status);
  *
  * \return The number of read bytes (-1 on error).
  */
-int16_t edc_get_ptt_pkg(edc_config_t config, uint8_t *pkg);
+int16_t edc_get_ptt_pkg(edc_config_t *config, uint8_t *pkg);
 
 /**
  * \brief Gets the housekeeping (HK) frame.
@@ -343,7 +343,7 @@ int16_t edc_get_ptt_pkg(edc_config_t config, uint8_t *pkg);
  *
  * \return The number of read bytes (-1 on error).
  */
-int16_t edc_get_hk_pkg(edc_config_t config, uint8_t *hk);
+int16_t edc_get_hk_pkg(edc_config_t *config, uint8_t *hk);
 
 /**
  * \brief Gets the current ADC sample frame.
@@ -371,7 +371,7 @@ int16_t edc_get_hk_pkg(edc_config_t config, uint8_t *hk);
  *
  * \return The number of read bytes (-1 on error).
  */
-int16_t edc_get_adc_seq(edc_config_t config, uint8_t *seq);
+int16_t edc_get_adc_seq(edc_config_t *config, uint8_t *seq);
 
 /**
  * \brief Writes the string "ECHO" in the debug interface.
@@ -382,7 +382,7 @@ int16_t edc_get_adc_seq(edc_config_t config, uint8_t *seq);
  *
  * \return The status/error code.
  */
-int edc_echo(edc_config_t config);
+int edc_echo(edc_config_t *config);
 
 /**
  * \brief Calculates the checksum of an array of bytes.
@@ -406,7 +406,7 @@ uint16_t edc_calc_checksum(uint8_t *data, uint16_t len);
  *
  * \return The status/error code.
  */
-int edc_get_state(edc_config_t config, edc_state_t *state_data);
+int edc_get_state(edc_config_t *config, edc_state_t *state_data);
 
 /**
  * \brief Gets the PTT data.
@@ -417,7 +417,7 @@ int edc_get_state(edc_config_t config, edc_state_t *state_data);
  *
  * \return The status/error code.
  */
-int edc_get_ptt(edc_config_t config, edc_ptt_t *ptt_data);
+int edc_get_ptt(edc_config_t *config, edc_ptt_t *ptt_data);
 
 /**
  * \brief Gets the housekeeping data.
@@ -428,7 +428,7 @@ int edc_get_ptt(edc_config_t config, edc_ptt_t *ptt_data);
  *
  * \return The status/error code.
  */
-int edc_get_hk(edc_config_t config, edc_hk_t *hk_data);
+int edc_get_hk(edc_config_t *config, edc_hk_t *hk_data);
 
 /**
  * \brief Initializes the I2C port.
@@ -437,7 +437,7 @@ int edc_get_hk(edc_config_t config, edc_hk_t *hk_data);
  *
  * \return The status/error code.
  */
-int edc_i2c_init(edc_config_t config);
+int edc_i2c_init(edc_config_t *config);
 
 /**
  * \brief Writes a given sequence of bytes to the I2C bus.
@@ -450,7 +450,7 @@ int edc_i2c_init(edc_config_t config);
  *
  * \return The status/error code.
  */
-int edc_i2c_write(edc_config_t config, uint8_t *data, uint16_t len);
+int edc_i2c_write(edc_config_t *config, uint8_t *data, uint16_t len);
 
 /**
  * \brief Reads data from the I2C bus.
@@ -463,7 +463,7 @@ int edc_i2c_write(edc_config_t config, uint8_t *data, uint16_t len);
  *
  * \return The status/error code.
  */
-int edc_i2c_read(edc_config_t config, uint8_t *data, uint16_t len);
+int edc_i2c_read(edc_config_t *config, uint8_t *data, uint16_t len);
 
 /**
  * \brief GPIO pin initialization.
@@ -472,7 +472,7 @@ int edc_i2c_read(edc_config_t config, uint8_t *data, uint16_t len);
  *
  * \return The status/error code.
  */
-int edc_gpio_init(edc_config_t config);
+int edc_gpio_init(edc_config_t *config);
 
 /**
  * \brief Set the GPIO pin state.
@@ -481,7 +481,7 @@ int edc_gpio_init(edc_config_t config);
  *
  * \return The status/error code.
  */
-int edc_gpio_set(edc_config_t config);
+int edc_gpio_set(edc_config_t *config);
 
 /**
  * \brief Clears the GPIO pin.
@@ -490,7 +490,7 @@ int edc_gpio_set(edc_config_t config);
  *
  * \return The status/error code.
  */
-int edc_gpio_clear(edc_config_t config);
+int edc_gpio_clear(edc_config_t *config);
 
 /**
  * \brief Milliseconds delay.
@@ -508,7 +508,7 @@ void edc_delay_ms(uint32_t ms);
  *
  * \return The status/error code.
  */
-int edc_uart_init(edc_config_t config);
+int edc_uart_init(edc_config_t *config);
 
 /**
  * \brief Writes data to the UART port.
@@ -521,7 +521,7 @@ int edc_uart_init(edc_config_t config);
  *
  * \return The status/error code.
  */
-int edc_uart_write(edc_config_t config, uint8_t *data, uint16_t len);
+int edc_uart_write(edc_config_t *config, uint8_t *data, uint16_t len);
 
 /**
  * \brief Reads data from the UART port.
@@ -534,7 +534,7 @@ int edc_uart_write(edc_config_t config, uint8_t *data, uint16_t len);
  *
  * \return The status/error code.
  */
-int edc_uart_read(edc_config_t config, uint8_t *data, uint16_t len);
+int edc_uart_read(edc_config_t *config, uint8_t *data, uint16_t len);
 
 /**
  * \brief Verifies if there is data available to received in the UART RX buffer.
@@ -543,7 +543,7 @@ int edc_uart_read(edc_config_t config, uint8_t *data, uint16_t len);
  *
  * \return The number of available bytes, -1 on error.
  */
-int edc_uart_rx_available(edc_config_t config);
+int edc_uart_rx_available(edc_config_t *config);
 
 #endif /* EDC_H_ */
 

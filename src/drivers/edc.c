@@ -39,7 +39,7 @@
 
 #include <drivers/edc.h>
 
-int edc_init(edc_config_t config)
+int edc_init(edc_config_t *config)
 {
     int err = -1;
 
@@ -47,7 +47,7 @@ int edc_init(edc_config_t config)
     {
         if (edc_enable(config) == 0)
         {
-            switch(config.interface)
+            switch(config->interface)
             {
                 case EDC_IF_UART:
                     if (edc_uart_init(config) == 0)
@@ -70,17 +70,17 @@ int edc_init(edc_config_t config)
     return err;
 }
 
-int edc_enable(edc_config_t config)
+int edc_enable(edc_config_t *config)
 {
     return edc_gpio_set(config);
 }
 
-int edc_disable(edc_config_t config)
+int edc_disable(edc_config_t *config)
 {
     return edc_gpio_clear(config);
 }
 
-int edc_write_cmd(edc_config_t config, edc_cmd_t cmd)
+int edc_write_cmd(edc_config_t *config, edc_cmd_t cmd)
 {
     int err = 0;
 
@@ -122,7 +122,7 @@ int edc_write_cmd(edc_config_t config, edc_cmd_t cmd)
 
     if (err == 0)
     {
-        switch(config.interface)
+        switch(config->interface)
         {
             case EDC_IF_UART:   err = edc_uart_write(config, cmd_str, cmd_str_len); break;
             case EDC_IF_I2C:    err = edc_i2c_write(config, cmd_str, cmd_str_len);  break;
@@ -135,11 +135,11 @@ int edc_write_cmd(edc_config_t config, edc_cmd_t cmd)
     return err;
 }
 
-int edc_read(edc_config_t config, uint8_t *data, uint16_t len)
+int edc_read(edc_config_t *config, uint8_t *data, uint16_t len)
 {
     int err = -1;
 
-    switch(config.interface)
+    switch(config->interface)
     {
         case EDC_IF_UART:
             if (edc_uart_rx_available(config) > 0)
@@ -158,7 +158,7 @@ int edc_read(edc_config_t config, uint8_t *data, uint16_t len)
     return err;
 }
 
-int edc_check_device(edc_config_t config)
+int edc_check_device(edc_config_t *config)
 {
     int err = 0;
 
@@ -172,7 +172,7 @@ int edc_check_device(edc_config_t config)
     return err;
 }
 
-int edc_set_rtc_time(edc_config_t config, uint32_t time)
+int edc_set_rtc_time(edc_config_t *config, uint32_t time)
 {
     edc_cmd_t rtc_cmd;
 
@@ -182,7 +182,7 @@ int edc_set_rtc_time(edc_config_t config, uint32_t time)
     return edc_write_cmd(config, rtc_cmd);
 }
 
-int edc_pop_ptt_pkg(edc_config_t config)
+int edc_pop_ptt_pkg(edc_config_t *config)
 {
     edc_cmd_t cmd = {0};
 
@@ -191,7 +191,7 @@ int edc_pop_ptt_pkg(edc_config_t config)
     return edc_write_cmd(config, cmd);
 }
 
-int edc_pause_ptt_task(edc_config_t config)
+int edc_pause_ptt_task(edc_config_t *config)
 {
     edc_cmd_t cmd = {0};
 
@@ -200,7 +200,7 @@ int edc_pause_ptt_task(edc_config_t config)
     return edc_write_cmd(config, cmd);
 }
 
-int edc_resume_ptt_task(edc_config_t config)
+int edc_resume_ptt_task(edc_config_t *config)
 {
     edc_cmd_t cmd = {0};
 
@@ -209,7 +209,7 @@ int edc_resume_ptt_task(edc_config_t config)
     return edc_write_cmd(config, cmd);
 }
 
-int edc_start_adc_task(edc_config_t config)
+int edc_start_adc_task(edc_config_t *config)
 {
     edc_cmd_t cmd = {0};
 
@@ -218,7 +218,7 @@ int edc_start_adc_task(edc_config_t config)
     return edc_write_cmd(config, cmd);
 }
 
-int16_t edc_get_state_pkg(edc_config_t config, uint8_t *status)
+int16_t edc_get_state_pkg(edc_config_t *config, uint8_t *status)
 {
     int16_t res = -1;
 
@@ -243,7 +243,7 @@ int16_t edc_get_state_pkg(edc_config_t config, uint8_t *status)
     return res;
 }
 
-int16_t edc_get_ptt_pkg(edc_config_t config, uint8_t *pkg)
+int16_t edc_get_ptt_pkg(edc_config_t *config, uint8_t *pkg)
 {
     int res = -1;
 
@@ -268,7 +268,7 @@ int16_t edc_get_ptt_pkg(edc_config_t config, uint8_t *pkg)
     return res;
 }
 
-int16_t edc_get_hk_pkg(edc_config_t config, uint8_t *hk)
+int16_t edc_get_hk_pkg(edc_config_t *config, uint8_t *hk)
 {
     int16_t res = -1;
 
@@ -293,7 +293,7 @@ int16_t edc_get_hk_pkg(edc_config_t config, uint8_t *hk)
     return res;
 }
 
-int16_t edc_get_adc_seq(edc_config_t config, uint8_t *seq)
+int16_t edc_get_adc_seq(edc_config_t *config, uint8_t *seq)
 {
     int16_t res = -1;
 
@@ -318,7 +318,7 @@ int16_t edc_get_adc_seq(edc_config_t config, uint8_t *seq)
     return res;
 }
 
-int edc_echo(edc_config_t config)
+int edc_echo(edc_config_t *config)
 {
     int res = -1;
 
@@ -328,7 +328,7 @@ int edc_echo(edc_config_t config)
 
     if (edc_write_cmd(config, cmd) == 0)
     {
-        if (config.interface == EDC_IF_UART)    /* The echo command just answers when using the UART interface (I think...) */
+        if (config->interface == EDC_IF_UART)    /* The echo command just answers when using the UART interface (I think...) */
         {
             /* A minimum time gap of 10 ms must be forced between consecutive I2C commands */
             edc_delay_ms(100);  /* 10 ms is not enough when using the UART interface! */
@@ -366,7 +366,7 @@ uint16_t edc_calc_checksum(uint8_t *data, uint16_t len)
     return checksum;
 }
 
-int edc_get_state(edc_config_t config, edc_state_t *state_data)
+int edc_get_state(edc_config_t *config, edc_state_t *state_data)
 {
     int err = -1;
 
@@ -397,7 +397,7 @@ int edc_get_state(edc_config_t config, edc_state_t *state_data)
     return err;
 }
 
-int edc_get_ptt(edc_config_t config, edc_ptt_t *ptt_data)
+int edc_get_ptt(edc_config_t *config, edc_ptt_t *ptt_data)
 {
     int err = -1;
 
@@ -436,7 +436,7 @@ int edc_get_ptt(edc_config_t config, edc_ptt_t *ptt_data)
     return err;
 }
 
-int edc_get_hk(edc_config_t config, edc_hk_t *hk_data)
+int edc_get_hk(edc_config_t *config, edc_hk_t *hk_data)
 {
     int err = -1;
 

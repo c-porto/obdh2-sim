@@ -37,17 +37,17 @@
 
 /* TODO: Unsupported */
 
-int edc_i2c_init(edc_config_t config)
+int edc_i2c_init(edc_config_t *config)
 {
     return -1;
 }
 
-int edc_i2c_write(edc_config_t config, uint8_t *data, uint16_t len)
+int edc_i2c_write(edc_config_t *config, uint8_t *data, uint16_t len)
 {
     return -1;
 }
 
-int edc_i2c_read(edc_config_t config, uint8_t *data, uint16_t len)
+int edc_i2c_read(edc_config_t *config, uint8_t *data, uint16_t len)
 {
     return -1;
 }
