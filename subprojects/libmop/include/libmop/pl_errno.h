@@ -1,5 +1,5 @@
-#ifndef PL_ERRNO_H_
-#define PL_ERRNO_H_
+#ifndef LIBMOP_PL_ERRNO_H_
+#define LIBMOP_PL_ERRNO_H_
 
 #include <stdint.h>
 

@@ -1,5 +1,5 @@
-#ifndef PAYLOAD_H_
-#define PAYLOAD_H_
+#ifndef LIBMOP_PAYLOAD_H_
+#define LIBMOP_PAYLOAD_H_
 
 #include <stdint.h>
 #include <stddef.h>

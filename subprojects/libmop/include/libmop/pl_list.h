@@ -1,5 +1,5 @@
-#ifndef PL_LIST_H_
-#define PL_LIST_H_
+#ifndef LIBMOP_PL_LIST_H_
+#define LIBMOP_PL_LIST_H_
 
 #ifdef __cplusplus
 extern "C" {
