@@ -150,13 +150,13 @@ int payload_edc_init(uint8_t edc_id, struct payload *edc,
 
 	switch (edc_id) {
 	case 1U:
-		// TODO: Should be rename after Vivado design.
 		memset(edc_conf, 0U, sizeof(*edc_conf));
-		(void)strncpy(edc_conf->i2c_dev, "/dev/i2c-1", 24U);
+		strncpy(edc_conf->i2c_dev, "/dev/i2c-2", 24U);
 		edc_conf->interface = EDC_IF_I2C;
+
 		edc->payload_data = edc_conf;
 		edc->ctx = edc_ctx;
-		(void)strncpy(edc->name, "EDC1", PAYLOAD_NAME_MAX);
+		strncpy(edc->name, "EDC1", PAYLOAD_NAME_MAX);
 		edc->id = edc_id;
 		edc->init = edc_pl_init;
 		edc->write_cmd = edc_pl_write_cmd;
@@ -166,6 +166,7 @@ int payload_edc_init(uint8_t edc_id, struct payload *edc,
 		edc->enable = edc_pl_enable;
 		edc->get_clock = edc_pl_get_clock;
 		edc->set_clock = edc_pl_set_clock;
+
 		pl_list_add(edc);
 		break;
 	case 2U:
