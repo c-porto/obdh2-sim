@@ -42,69 +42,72 @@
 
 #include <drivers/sl_eps2.h>
 
-#define I2C_CTRL_PATH "/dev/i2c-0"
+#define I2C_CTRL_PATH "/dev/i2c-2"
 
-int sl_eps2_i2c_init(sl_eps2_config_t config) {
-  int err = -1;
+int sl_eps2_i2c_init(sl_eps2_config_t config)
+{
+	int err = -1;
 
-  /* Check if the I2C controller path exists */
-  if (access(I2C_CTRL_PATH, F_OK) != -1) {
-    err = 0;
-  }
+	/* Check if the I2C controller path exists */
+	if (access(I2C_CTRL_PATH, F_OK) != -1) {
+		err = 0;
+	}
 
-  return err;
+	return err;
 }
 
-int sl_eps2_i2c_write(sl_eps2_config_t config, uint8_t *data, uint16_t len) {
-  int fd;
+int sl_eps2_i2c_write(sl_eps2_config_t config, uint8_t *data, uint16_t len)
+{
+	int fd;
 
-  fd = open(I2C_CTRL_PATH, O_WRONLY);
+	fd = open(I2C_CTRL_PATH, O_WRONLY);
 
-  if (fd < 0) {
-    perror("Could not open i2c device");
-    return -1;
-  }
+	if (fd < 0) {
+		perror("Could not open i2c device");
+		return -1;
+	}
 
-  if (ioctl(fd, I2C_SLAVE, SL_EPS2_I2C_SLAVE_ADR) < 0) {
-    perror("Failed to acquire bus access and/or talk to slave");
-    close(fd);
-    return -1;
-  }
+	if (ioctl(fd, I2C_SLAVE, SL_EPS2_I2C_SLAVE_ADR) < 0) {
+		perror("Failed to acquire bus access and/or talk to slave");
+		close(fd);
+		return -1;
+	}
 
-  if (write(fd, data, len) != len) {
-    perror("Could not write to i2c device");
-    close(fd);
-    return -1;
-  }
+	if (write(fd, data, len) != len) {
+		perror("Could not write to i2c device");
+		close(fd);
+		return -1;
+	}
 
-  close(fd);
-  return 0;
+	close(fd);
+	return 0;
 }
 
-int sl_eps2_i2c_read(sl_eps2_config_t config, uint8_t *data, uint16_t len) {
-  int fd;
+int sl_eps2_i2c_read(sl_eps2_config_t config, uint8_t *data, uint16_t len)
+{
+	int fd;
 
-  fd = open(I2C_CTRL_PATH, O_RDONLY);
+	fd = open(I2C_CTRL_PATH, O_RDONLY);
 
-  if (fd < 0) {
-    perror("Could not open i2c device");
-    return -1;
-  }
+	if (fd < 0) {
+		perror("Could not open i2c device");
+		return -1;
+	}
 
-  if (ioctl(fd, I2C_SLAVE, SL_EPS2_I2C_SLAVE_ADR) < 0) {
-    perror("Failed to acquire bus access and/or talk to slave");
-    close(fd);
-    return -1;
-  }
+	if (ioctl(fd, I2C_SLAVE, SL_EPS2_I2C_SLAVE_ADR) < 0) {
+		perror("Failed to acquire bus access and/or talk to slave");
+		close(fd);
+		return -1;
+	}
 
-  if (read(fd, data, len) != len) {
-    perror("Could not read to i2c device");
-    close(fd);
-    return -1;
-  }
+	if (read(fd, data, len) != len) {
+		perror("Could not read to i2c device");
+		close(fd);
+		return -1;
+	}
 
-  close(fd);
-  return 0;
+	close(fd);
+	return 0;
 }
 
 /** \} End of sl_eps2 group */

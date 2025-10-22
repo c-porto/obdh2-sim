@@ -34,22 +34,77 @@
  */
 
 #include <drivers/edc.h>
-
-/* TODO: Unsupported */
+#include <fcntl.h>
+#include <linux/i2c-dev.h>
+#include <stdio.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 int edc_i2c_init(edc_config_t *config)
 {
-    return -1;
+	int err = -1;
+
+	/* Check if the I2C controller path exists */
+	if (access(config->i2c_dev, F_OK) != -1) {
+		err = 0;
+	}
+
+	return err;
 }
 
 int edc_i2c_write(edc_config_t *config, uint8_t *data, uint16_t len)
 {
-    return -1;
+	int fd;
+
+	fd = open(config->i2c_dev, O_WRONLY);
+
+	if (fd < 0) {
+		perror("Could not open i2c device");
+		return -1;
+	}
+
+	if (ioctl(fd, I2C_SLAVE, EDC_SLAVE_ADDRESS) < 0) {
+		perror("Failed to acquire bus access and/or talk to slave");
+		close(fd);
+		return -1;
+	}
+
+	if (write(fd, data, len) != len) {
+		perror("Could not write to i2c device");
+		close(fd);
+		return -1;
+	}
+
+	close(fd);
+	return 0;
 }
 
 int edc_i2c_read(edc_config_t *config, uint8_t *data, uint16_t len)
 {
-    return -1;
+	int fd;
+
+	fd = open(config->i2c_dev, O_RDONLY);
+
+	if (fd < 0) {
+		perror("Could not open i2c device");
+		return -1;
+	}
+
+	if (ioctl(fd, I2C_SLAVE, EDC_SLAVE_ADDRESS) < 0) {
+		perror("Failed to acquire bus access and/or talk to slave");
+		close(fd);
+		return -1;
+	}
+
+	if (read(fd, data, len) != len) {
+		perror("Could not read to i2c device");
+		close(fd);
+		return -1;
+	}
+
+	close(fd);
+	return 0;
 }
 
 /** \} End of edc group */

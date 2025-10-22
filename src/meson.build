@@ -4,3 +4,5 @@ obdh2_sim_srcs += files(
 
 subdir('devices')
 subdir('drivers')
+subdir('system')
+subdir('threads')

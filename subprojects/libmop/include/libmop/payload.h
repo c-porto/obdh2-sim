@@ -29,7 +29,6 @@ struct payload_timestamp {
 struct payload_ctx {
 	uint8_t active;
 	struct payload_timestamp ctx_change_ts;
-	/// Probably more state things will be added
 };
 
 /**

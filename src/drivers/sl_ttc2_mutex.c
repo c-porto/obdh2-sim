@@ -1,7 +1,7 @@
 /*
- * sl_eps2_delay.c
+ * sl_ttc2_mutex.c
  *
- * Copyright (C) 2021, SpaceLab.
+ * Copyright The OBDH 2.0 Contributors
  *
  * This file is part of OBDH 2.0.
  *
@@ -21,29 +21,33 @@
  */
 
 /**
- * \brief SpaceLab EPS 2.0 driver delay implementation.
+ * \brief SpaceLab TTC 2.0 driver mutex implementation.
  *
- * \author Gabriel Mariano Marcelino <gabriel.mm8@gmail.com>
+ * \author Carlos Augusto Porto Freitas <carlos.portof@hotmail.com>
  *
- * \version 0.7.35
+ * \version 0.10.14
  *
- * \date 2021/05/06
+ * \date 2024/02/26
  *
- * \addtogroup sl_eps2
+ * \addtogroup sl_ttc2
  * \{
  */
 
-#include <drivers/sl_eps2.h>
-#include <time.h>
-#include <unistd.h>
+#include <stddef.h>
+#include <pthread.h>
 
-void sl_eps2_delay_ms(uint32_t ms) {
-  struct timespec ts;
+#include <drivers/sl_ttc2.h>
 
-  ts.tv_sec = 0U;
-  ts.tv_nsec = ms * 1000000UL;
+static pthread_mutex_t ttc_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-  clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL);
+int sl_ttc2_mutex_take(void)
+{
+    return pthread_mutex_lock(&ttc_mutex);
 }
 
-/** \} End of sl_eps2 group */
+int sl_ttc2_mutex_give(void)
+{
+    return pthread_mutex_unlock(&ttc_mutex);
+}
+
+/** \} End of sl_ttc2_mutex group */

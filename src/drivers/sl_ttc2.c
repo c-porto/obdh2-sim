@@ -1,0 +1,830 @@
+/*
+ * sl_ttc2.c
+ * 
+ * Copyright The OBDH 2.0 Contributors.
+ * 
+ * This file is part of OBDH 2.0.
+ * 
+ * OBDH 2.0 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * OBDH 2.0 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with OBDH 2.0. If not, see <http:/\/www.gnu.org/licenses/>.
+ * 
+ */
+
+/**
+ * \brief SpaceLab TTC 2.0 driver implementation.
+ * 
+ * \author Gabriel Mariano Marcelino <gabriel.mm8@gmail.com>
+ * \author Carlos Augusto Porto Freitas <carlos.portof@hotmail.com>
+ * 
+ * \version 1.0.0
+ * 
+ * \date 2021/05/12
+ * 
+ * \addtogroup sl_ttc2
+ * \{
+ */
+
+#include <string.h>
+
+#include <drivers/sl_ttc2.h>
+
+#define CRC8_INITIAL_VAL 0x00U /* CRC8-CCITT initial value. */
+#define CRC8_POLYNOMIAL 0x07U /* CRC8-CCITT polynomial. */
+
+static uint8_t crc8_get_val(uint8_t *data, uint8_t len)
+{
+	uint8_t crc = CRC8_INITIAL_VAL;
+	uint8_t i = 0U;
+	uint8_t j = 0U;
+
+	for (i = 0U; i < len; i++) {
+		crc ^= data[i];
+
+		j = 0U;
+		for (j = 0U; j < 8U; j++) {
+			crc = (crc << 1) ^
+			      ((crc & 0x80U) ? CRC8_POLYNOMIAL : 0U);
+		}
+
+		crc &= 0xFFU;
+	}
+
+	return crc;
+}
+
+int sl_ttc2_init(sl_ttc2_config_t *config)
+{
+	int err = -1;
+
+	if (sl_ttc2_spi_init(config) == 0) {
+		sl_ttc2_delay_ms(10);
+
+		if (sl_ttc2_check_device(config) == 0) {
+			err = 0;
+		}
+	}
+
+	return err;
+}
+
+int sl_ttc2_check_device(sl_ttc2_config_t *config)
+{
+	int err = 0;
+
+	uint16_t id = UINT16_MAX;
+
+	if (sl_ttc2_read_device_id(config, &id) == 0) {
+		uint16_t ref_id = 0;
+
+		if (config->id == SL_TTC2_RADIO_0) {
+			ref_id = SL_TTC2_DEVICE_ID_RADIO_0;
+		} else if (config->id == SL_TTC2_RADIO_1) {
+			ref_id = SL_TTC2_DEVICE_ID_RADIO_1;
+		} else {
+			err = -1;
+		}
+
+		if (err == 0) {
+			if (id != ref_id) {
+				err = -1;
+			}
+		}
+	}
+
+	return err;
+}
+
+int sl_ttc2_write_reg(sl_ttc2_config_t *config, uint8_t adr, uint32_t val)
+{
+	int err = -1;
+
+	uint8_t buf[8] = { 0 };
+
+	/* Adding preamble byte */
+	buf[0] = SL_TTC2_PKT_PREAMBLE;
+
+	/* Command ID */
+	buf[1] = SL_TTC2_CMD_WRITE_REG;
+
+	/* Register address */
+	buf[2] = adr;
+
+	/* Register data */
+	switch (adr) {
+	case SL_TTC2_REG_DEVICE_ID:
+		buf[3] = (val >> 8) & 0xFFU;
+		buf[4] = (val >> 0) & 0xFFU;
+		break;
+	case SL_TTC2_REG_HARDWARE_VERSION:
+		buf[3] = val & 0xFFU;
+		break;
+	case SL_TTC2_REG_RESET_COUNTER:
+		buf[3] = (val >> 8) & 0xFFU;
+		buf[4] = (val >> 0) & 0xFFU;
+		break;
+	case SL_TTC2_REG_LAST_RESET_CAUSE:
+		buf[3] = val & 0xFFU;
+		break;
+	case SL_TTC2_REG_INPUT_VOLTAGE_MCU:
+		buf[3] = (val >> 8) & 0xFFU;
+		buf[4] = (val >> 0) & 0xFFU;
+		break;
+	case SL_TTC2_REG_INPUT_CURRENT_MCU:
+		buf[3] = (val >> 8) & 0xFFU;
+		buf[4] = (val >> 0) & 0xFFU;
+		break;
+	case SL_TTC2_REG_TEMPERATURE_MCU:
+		buf[3] = (val >> 8) & 0xFFU;
+		buf[4] = (val >> 0) & 0xFFU;
+		break;
+	case SL_TTC2_REG_INPUT_VOLTAGE_RADIO:
+		buf[3] = (val >> 8) & 0xFFU;
+		buf[4] = (val >> 0) & 0xFFU;
+		break;
+	case SL_TTC2_REG_INPUT_CURRENT_RADIO:
+		buf[3] = (val >> 8) & 0xFFU;
+		buf[4] = (val >> 0) & 0xFFU;
+		break;
+	case SL_TTC2_REG_TEMPERATURE_RADIO:
+		buf[3] = (val >> 8) & 0xFFU;
+		buf[4] = (val >> 0) & 0xFFU;
+		break;
+	case SL_TTC2_REG_LAST_VALID_TC:
+		buf[3] = val & 0xFFU;
+		break;
+	case SL_TTC2_REG_RSSI_LAST_VALID_TC:
+		buf[3] = (val >> 8) & 0xFFU;
+		buf[4] = (val >> 0) & 0xFFU;
+		break;
+	case SL_TTC2_REG_TEMPERATURE_ANTENNA:
+		buf[3] = (val >> 8) & 0xFFU;
+		buf[4] = (val >> 0) & 0xFFU;
+		break;
+	case SL_TTC2_REG_ANTENNA_STATUS:
+		buf[3] = (val >> 8) & 0xFFU;
+		buf[4] = (val >> 0) & 0xFFU;
+		break;
+	case SL_TTC2_REG_ANTENNA_DEPLOYMENT_STATUS:
+		buf[3] = val & 0xFFU;
+		break;
+	case SL_TTC2_REG_ANTENNA_DEP_HIB_STATUS:
+		buf[3] = val & 0xFFU;
+		break;
+	case SL_TTC2_REG_TX_ENABLE:
+		buf[3] = val & 0xFFU;
+		break;
+	case SL_TTC2_REG_FIFO_TX_PACKET:
+		buf[3] = val & 0xFFU;
+		break;
+	case SL_TTC2_REG_FIFO_RX_PACKET:
+		buf[3] = val & 0xFFU;
+		break;
+	case SL_TTC2_REG_LEN_FIRST_RX_PACKET_IN_FIFO:
+		buf[3] = (val >> 8) & 0xFFU;
+		buf[4] = (val >> 0) & 0xFFU;
+		break;
+	case SL_TTC2_REG_RESET_DEVICE:
+		buf[3] = val & 0xFFU;
+		break;
+	default:
+		buf[3] = (val >> 24) & 0xFFU;
+		buf[4] = (val >> 16) & 0xFFU;
+		buf[5] = (val >> 8) & 0xFFU;
+		buf[6] = (val >> 0) & 0xFFU;
+		break;
+	}
+
+	buf[7] = crc8_get_val(buf, 7U);
+
+	if (sl_ttc2_mutex_take() == 0) {
+		err = sl_ttc2_spi_write(config, buf, 8U);
+
+		sl_ttc2_delay_ms(SL_TTC2_EXTRA_MUTEX_DELAY_MS);
+
+		(void)sl_ttc2_mutex_give();
+	}
+
+	return err;
+}
+
+int sl_ttc2_read_reg(sl_ttc2_config_t *config, uint8_t adr, uint32_t *val)
+{
+	int err = -1;
+
+	uint8_t wbuf[8] = { 0 };
+	uint8_t rbuf[8] = { 0 };
+
+	/* Adding preamble byte */
+	wbuf[0] = SL_TTC2_PKT_PREAMBLE;
+
+	/* Command ID */
+	wbuf[1] = SL_TTC2_CMD_READ_REG;
+
+	/* Register address */
+	wbuf[2] = adr;
+
+	wbuf[7] = crc8_get_val(wbuf, 7U);
+
+	if (sl_ttc2_mutex_take() == 0) {
+		/* Register data */
+		if (sl_ttc2_spi_write(config, wbuf, 8U) == 0) {
+			sl_ttc2_delay_ms(SL_TTC2_TRANSACTION_DELAY_MS);
+
+			if (sl_ttc2_spi_read(config, rbuf, 8U) == 0) {
+				if (crc8_get_val(rbuf, 7U) == rbuf[7]) {
+					if ((rbuf[0] == SL_TTC2_PKT_PREAMBLE) &&
+					    (rbuf[1] == SL_TTC2_CMD_READ_REG) &&
+					    (rbuf[2] == adr)) {
+						uint32_t val_buf =
+							((uint32_t)rbuf[3]
+							 << 24) |
+							((uint32_t)rbuf[4]
+							 << 16) |
+							((uint32_t)rbuf[5]
+							 << 8) |
+							((uint32_t)rbuf[6]
+							 << 0);
+
+						switch (adr) {
+						case SL_TTC2_REG_DEVICE_ID:
+							*val = val_buf >> 16;
+							break;
+						case SL_TTC2_REG_HARDWARE_VERSION:
+							*val = val_buf >> 24;
+							break;
+						case SL_TTC2_REG_RESET_COUNTER:
+							*val = val_buf >> 16;
+							break;
+						case SL_TTC2_REG_LAST_RESET_CAUSE:
+							*val = val_buf >> 24;
+							break;
+						case SL_TTC2_REG_INPUT_VOLTAGE_MCU:
+							*val = val_buf >> 16;
+							break;
+						case SL_TTC2_REG_INPUT_CURRENT_MCU:
+							*val = val_buf >> 16;
+							break;
+						case SL_TTC2_REG_TEMPERATURE_MCU:
+							*val = val_buf >> 16;
+							break;
+						case SL_TTC2_REG_INPUT_VOLTAGE_RADIO:
+							*val = val_buf >> 16;
+							break;
+						case SL_TTC2_REG_INPUT_CURRENT_RADIO:
+							*val = val_buf >> 16;
+							break;
+						case SL_TTC2_REG_TEMPERATURE_RADIO:
+							*val = val_buf >> 16;
+							break;
+						case SL_TTC2_REG_LAST_VALID_TC:
+							*val = val_buf >> 24;
+							break;
+						case SL_TTC2_REG_RSSI_LAST_VALID_TC:
+							*val = val_buf >> 16;
+							break;
+						case SL_TTC2_REG_TEMPERATURE_ANTENNA:
+							*val = val_buf >> 16;
+							break;
+						case SL_TTC2_REG_ANTENNA_STATUS:
+							*val = val_buf >> 16;
+							break;
+						case SL_TTC2_REG_ANTENNA_DEPLOYMENT_STATUS:
+							*val = val_buf >> 24;
+							break;
+						case SL_TTC2_REG_ANTENNA_DEP_HIB_STATUS:
+							*val = val_buf >> 24;
+							break;
+						case SL_TTC2_REG_TX_ENABLE:
+							*val = val_buf >> 24;
+							break;
+						case SL_TTC2_REG_FIFO_TX_PACKET:
+							*val = val_buf >> 24;
+							break;
+						case SL_TTC2_REG_FIFO_RX_PACKET:
+							*val = val_buf >> 24;
+							break;
+						case SL_TTC2_REG_LEN_FIRST_RX_PACKET_IN_FIFO:
+							*val = val_buf >> 16;
+							break;
+						default:
+							*val = val_buf;
+							break;
+						}
+
+						err = 0;
+					}
+				}
+			}
+		}
+
+		sl_ttc2_delay_ms(SL_TTC2_EXTRA_MUTEX_DELAY_MS);
+
+		(void)sl_ttc2_mutex_give();
+	}
+
+	return err;
+}
+
+int sl_ttc2_read_hk_data(sl_ttc2_config_t *config, sl_ttc2_hk_data_t *data)
+{
+	int err_counter = 0;
+
+	/* Time counter */
+	if (sl_ttc2_read_time_counter(config, &(data->time_counter)) != 0) {
+		err_counter++;
+	}
+
+	/* Reset counter */
+	if (sl_ttc2_read_reset_counter(config, &(data->reset_counter)) != 0) {
+		err_counter++;
+	}
+
+	/* Last reset cause */
+	if (sl_ttc2_read_reset_cause(config, &(data->last_reset_cause)) != 0) {
+		err_counter++;
+	}
+
+	sl_ttc2_delay_ms(5);
+
+	/* MCU power */
+	if (sl_ttc2_read_voltage(config, SL_TTC2_VOLTAGE_MCU,
+				 &(data->voltage_mcu)) != 0) {
+		err_counter++;
+	}
+
+	if (sl_ttc2_read_current(config, SL_TTC2_CURRENT_MCU,
+				 &(data->current_mcu)) != 0) {
+		err_counter++;
+	}
+
+	/* MCU temperature */
+	if (sl_ttc2_read_temp(config, SL_TTC2_TEMP_MCU,
+			      &(data->temperature_mcu)) != 0) {
+		err_counter++;
+	}
+
+	sl_ttc2_delay_ms(5);
+
+	/* Radio power */
+	if (sl_ttc2_read_voltage(config, SL_TTC2_VOLTAGE_RADIO,
+				 &(data->voltage_radio)) != 0) {
+		err_counter++;
+	}
+
+	if (sl_ttc2_read_current(config, SL_TTC2_CURRENT_RADIO,
+				 &(data->current_radio)) != 0) {
+		err_counter++;
+	}
+
+	/* Radio temperature */
+	if (sl_ttc2_read_temp(config, SL_TTC2_TEMP_RADIO,
+			      &(data->temperature_radio)) != 0) {
+		err_counter++;
+	}
+
+	sl_ttc2_delay_ms(5);
+
+	/* Last valid telecommand */
+	if (sl_ttc2_read_last_valid_tc(config, &(data->last_valid_tc)) != 0) {
+		err_counter++;
+	}
+
+	/* RSSI */
+	if (sl_ttc2_read_rssi(config, &(data->rssi_last_valid_tc)) != 0) {
+		err_counter++;
+	}
+
+	/* Antenna data */
+	if (sl_ttc2_read_temp(config, SL_TTC2_TEMP_ANTENNA,
+			      &(data->temperature_antenna)) != 0) {
+		err_counter++;
+	}
+
+	sl_ttc2_delay_ms(5);
+
+	if (sl_ttc2_read_antenna_status(config, &(data->antenna_status)) != 0) {
+		err_counter++;
+	}
+
+	if (sl_ttc2_read_antenna_deployment_status(
+		    config, &(data->deployment_status)) != 0) {
+		err_counter++;
+	}
+
+	if (sl_ttc2_read_antenna_deployment_hibernation_status(
+		    config, &(data->hibernation_status)) != 0) {
+		err_counter++;
+	}
+
+	sl_ttc2_delay_ms(5);
+
+	/* Packet counter */
+	if (sl_ttc2_read_pkt_counter(config, SL_TTC2_TX_PKT,
+				     &(data->tx_packet_counter)) != 0) {
+		err_counter++;
+	}
+
+	if (sl_ttc2_read_pkt_counter(config, SL_TTC2_RX_PKT,
+				     &(data->rx_packet_counter)) != 0) {
+		err_counter++;
+	}
+
+	return err_counter;
+}
+
+int sl_ttc2_read_device_id(sl_ttc2_config_t *config, uint16_t *val)
+{
+	uint32_t buf = UINT32_MAX;
+
+	int res = sl_ttc2_read_reg(config, SL_TTC2_REG_DEVICE_ID, &buf);
+
+	*val = (uint16_t)buf;
+
+	return res;
+}
+
+int sl_ttc2_read_hardware_version(sl_ttc2_config_t *config, uint8_t *val)
+{
+	uint32_t buf = UINT32_MAX;
+
+	int res = sl_ttc2_read_reg(config, SL_TTC2_REG_HARDWARE_VERSION, &buf);
+
+	*val = (uint8_t)buf;
+
+	return res;
+}
+
+int sl_ttc2_read_firmware_version(sl_ttc2_config_t *config, uint32_t *val)
+{
+	return sl_ttc2_read_reg(config, SL_TTC2_REG_FIRMWARE_VERSION, val);
+}
+
+int sl_ttc2_read_time_counter(sl_ttc2_config_t *config, uint32_t *val)
+{
+	return sl_ttc2_read_reg(config, SL_TTC2_REG_TIME_COUNTER, val);
+}
+
+int sl_ttc2_read_reset_counter(sl_ttc2_config_t *config, uint16_t *val)
+{
+	uint32_t buf = UINT32_MAX;
+
+	int res = sl_ttc2_read_reg(config, SL_TTC2_REG_RESET_COUNTER, &buf);
+
+	*val = (uint16_t)buf;
+
+	return res;
+}
+
+int sl_ttc2_read_reset_cause(sl_ttc2_config_t *config, uint8_t *val)
+{
+	uint32_t buf = UINT32_MAX;
+
+	int res = sl_ttc2_read_reg(config, SL_TTC2_REG_LAST_RESET_CAUSE, &buf);
+
+	*val = (uint8_t)buf;
+
+	return res;
+}
+
+int sl_ttc2_read_voltage(sl_ttc2_config_t *config, uint8_t volt,
+			 sl_ttc2_voltage_t *val)
+{
+	int res = -1;
+
+	uint32_t buf = UINT32_MAX;
+
+	switch (volt) {
+	case SL_TTC2_VOLTAGE_MCU:
+		res = sl_ttc2_read_reg(config, SL_TTC2_REG_INPUT_VOLTAGE_MCU,
+				       &buf);
+
+		*val = (sl_ttc2_voltage_t)buf;
+
+		break;
+	case SL_TTC2_VOLTAGE_RADIO:
+		res = sl_ttc2_read_reg(config, SL_TTC2_REG_INPUT_VOLTAGE_RADIO,
+				       &buf);
+
+		*val = (sl_ttc2_voltage_t)buf;
+
+		break;
+	default:
+		break;
+	}
+
+	return res;
+}
+
+int sl_ttc2_read_current(sl_ttc2_config_t *config, uint8_t cur,
+			 sl_ttc2_current_t *val)
+{
+	int res = -1;
+
+	uint32_t buf = UINT32_MAX;
+
+	switch (cur) {
+	case SL_TTC2_CURRENT_MCU:
+		res = sl_ttc2_read_reg(config, SL_TTC2_REG_INPUT_CURRENT_MCU,
+				       &buf);
+
+		*val = (sl_ttc2_current_t)buf;
+
+		break;
+	case SL_TTC2_CURRENT_RADIO:
+		res = sl_ttc2_read_reg(config, SL_TTC2_REG_INPUT_CURRENT_RADIO,
+				       &buf);
+
+		*val = (sl_ttc2_current_t)buf;
+
+		break;
+	default:
+		break;
+	}
+
+	return res;
+}
+
+int sl_ttc2_read_temp(sl_ttc2_config_t *config, uint8_t temp,
+		      sl_ttc2_temp_t *val)
+{
+	int res = -1;
+
+	uint32_t buf = UINT32_MAX;
+
+	switch (temp) {
+	case SL_TTC2_TEMP_MCU:
+		res = sl_ttc2_read_reg(config, SL_TTC2_REG_TEMPERATURE_MCU,
+				       &buf);
+
+		*val = (sl_ttc2_temp_t)buf;
+
+		break;
+	case SL_TTC2_TEMP_RADIO:
+		res = sl_ttc2_read_reg(config, SL_TTC2_REG_TEMPERATURE_RADIO,
+				       &buf);
+
+		*val = (sl_ttc2_temp_t)buf;
+
+		break;
+	case SL_TTC2_TEMP_ANTENNA:
+		res = sl_ttc2_read_reg(config, SL_TTC2_REG_TEMPERATURE_ANTENNA,
+				       &buf);
+
+		*val = (sl_ttc2_temp_t)buf;
+
+		break;
+	default:
+		break;
+	}
+
+	return res;
+}
+
+int sl_ttc2_read_last_valid_tc(sl_ttc2_config_t *config, uint8_t *val)
+{
+	uint32_t buf = UINT32_MAX;
+
+	int res = sl_ttc2_read_reg(config, SL_TTC2_REG_LAST_VALID_TC, &buf);
+
+	*val = (uint8_t)buf;
+
+	return res;
+}
+
+int sl_ttc2_read_rssi(sl_ttc2_config_t *config, sl_ttc2_rssi_t *val)
+{
+	uint32_t buf = UINT32_MAX;
+
+	int res =
+		sl_ttc2_read_reg(config, SL_TTC2_REG_RSSI_LAST_VALID_TC, &buf);
+
+	*val = (sl_ttc2_rssi_t)buf;
+
+	return res;
+}
+
+int sl_ttc2_read_antenna_status(sl_ttc2_config_t *config, uint16_t *val)
+{
+	uint32_t buf = UINT32_MAX;
+
+	int res = sl_ttc2_read_reg(config, SL_TTC2_REG_ANTENNA_STATUS, &buf);
+
+	*val = (uint16_t)buf;
+
+	return res;
+}
+
+int sl_ttc2_read_antenna_deployment_status(sl_ttc2_config_t *config,
+					   uint8_t *val)
+{
+	uint32_t buf = UINT32_MAX;
+
+	int res = sl_ttc2_read_reg(config,
+				   SL_TTC2_REG_ANTENNA_DEPLOYMENT_STATUS, &buf);
+
+	*val = (uint8_t)buf;
+
+	return res;
+}
+
+int sl_ttc2_read_antenna_deployment_hibernation_status(sl_ttc2_config_t *config,
+						       uint8_t *val)
+{
+	uint32_t buf = UINT32_MAX;
+
+	int res = sl_ttc2_read_reg(config, SL_TTC2_REG_ANTENNA_DEP_HIB_STATUS,
+				   &buf);
+
+	*val = (uint8_t)buf;
+
+	return res;
+}
+
+int sl_ttc2_read_tx_enable(sl_ttc2_config_t *config, uint8_t *val)
+{
+	uint32_t buf = UINT32_MAX;
+
+	int res = sl_ttc2_read_reg(config, SL_TTC2_REG_TX_ENABLE, &buf);
+
+	*val = (uint8_t)buf;
+
+	return res;
+}
+
+int sl_ttc2_set_tx_enable(sl_ttc2_config_t *config, bool en)
+{
+	return sl_ttc2_write_reg(config, SL_TTC2_REG_TX_ENABLE,
+				 (en ? 1UL : 0UL));
+}
+
+int sl_ttc2_read_pkt_counter(sl_ttc2_config_t *config, uint8_t pkt,
+			     uint32_t *val)
+{
+	int err = -1;
+
+	switch (pkt) {
+	case SL_TTC2_TX_PKT:
+		err = sl_ttc2_read_reg(config, SL_TTC2_REG_TX_PACKET_COUNTER,
+				       val);
+		break;
+	case SL_TTC2_RX_PKT:
+		err = sl_ttc2_read_reg(config, SL_TTC2_REG_RX_PACKET_COUNTER,
+				       val);
+		break;
+	default:
+		break;
+	}
+
+	return err;
+}
+
+int sl_ttc2_read_fifo_pkts(sl_ttc2_config_t *config, uint8_t pkt, uint8_t *val)
+{
+	int res = -1;
+
+	uint32_t buf = UINT32_MAX;
+
+	switch (pkt) {
+	case SL_TTC2_TX_PKT:
+		res = sl_ttc2_read_reg(config, SL_TTC2_REG_FIFO_TX_PACKET,
+				       &buf);
+
+		*val = (uint8_t)buf;
+
+		break;
+	case SL_TTC2_RX_PKT:
+		res = sl_ttc2_read_reg(config, SL_TTC2_REG_FIFO_RX_PACKET,
+				       &buf);
+
+		*val = (uint8_t)buf;
+
+		break;
+	default:
+		break;
+	}
+
+	return res;
+}
+
+int sl_ttc2_read_len_rx_pkt_in_fifo(sl_ttc2_config_t *config, uint16_t *val)
+{
+	uint32_t buf = UINT32_MAX;
+
+	int res = sl_ttc2_read_reg(
+		config, SL_TTC2_REG_LEN_FIRST_RX_PACKET_IN_FIFO, &buf);
+
+	*val = (uint16_t)buf;
+
+	return res;
+}
+
+int sl_ttc2_check_pkt_avail(sl_ttc2_config_t *config)
+{
+	int res = -1;
+
+	uint8_t pkts = 0;
+
+	if (sl_ttc2_read_fifo_pkts(config, SL_TTC2_RX_PKT, &pkts) == 0) {
+		res = pkts;
+	}
+
+	return res;
+}
+
+int sl_ttc2_transmit_packet(sl_ttc2_config_t *config, uint8_t *data,
+			    uint16_t len)
+{
+	int err = -1;
+
+	uint8_t buf[3 + 220] = { 0 };
+
+	/* Adding preamble byte */
+	buf[0] = SL_TTC2_PKT_PREAMBLE;
+
+	/* Command byte */
+	buf[1] = SL_TTC2_CMD_TRANSMIT_PKT;
+
+	/* Packet lenght */
+	buf[2] = len;
+
+	/* Calculate CRC */
+	buf[7] = crc8_get_val(buf, 7U);
+
+	if (sl_ttc2_mutex_take() == 0) {
+		if (sl_ttc2_spi_write(config, buf, 8U) == 0) {
+			sl_ttc2_delay_ms(SL_TTC2_TRANSACTION_DELAY_MS);
+
+			(void)memcpy(&buf[3], data, len);
+
+			/* Calculate CRC */
+			buf[len + 3U] = crc8_get_val(buf, len + 3U);
+
+			err = sl_ttc2_spi_write(config, buf, 3U + len + 1U);
+		}
+
+		sl_ttc2_delay_ms(SL_TTC2_EXTRA_MUTEX_DELAY_MS);
+
+		(void)sl_ttc2_mutex_give();
+	}
+
+	return err;
+}
+
+int sl_ttc2_read_packet(sl_ttc2_config_t *config, uint8_t *data, uint16_t *len)
+{
+	int err = -1;
+
+	uint8_t buf[8] = { 0 };
+
+	/* Adding preamble byte */
+	buf[0] = SL_TTC2_PKT_PREAMBLE;
+
+	/* Command byte */
+	buf[1] = SL_TTC2_CMD_RECEIVE_PKT;
+
+	/* Calculate CRC */
+	buf[7] = crc8_get_val(buf, 7U);
+
+	if (sl_ttc2_read_len_rx_pkt_in_fifo(config, len) == 0) {
+		if ((*len > 0) && (*len <= 300)) {
+			if (sl_ttc2_mutex_take() == 0) {
+				if (sl_ttc2_spi_write(config, buf, 8U) == 0) {
+					sl_ttc2_delay_ms(
+						SL_TTC2_TRANSACTION_DELAY_MS);
+
+					if (sl_ttc2_spi_read(config, data,
+							     1U + 1U + (*len) +
+								     1U) == 0) {
+						if (crc8_get_val(
+							    data,
+							    1U + 1U + (*len)) ==
+						    data[2U + (*len)]) {
+							(void)memcpy(data,
+								     &data[2],
+								     *len);
+							err = 0;
+						}
+					}
+				}
+
+				sl_ttc2_delay_ms(SL_TTC2_EXTRA_MUTEX_DELAY_MS);
+
+				(void)sl_ttc2_mutex_give();
+			}
+		}
+	}
+
+	return err;
+}
+
+/** \} End of sl_ttc2 group */

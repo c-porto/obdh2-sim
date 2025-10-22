@@ -150,9 +150,8 @@ int payload_edc_init(uint8_t edc_id, struct payload *edc,
 
 	switch (edc_id) {
 	case 1U:
-		// TODO: Should be rename after Vivado design.
 		memset(edc_conf, 0U, sizeof(*edc_conf));
-		(void)strncpy(edc_conf->i2c_dev, "/dev/i2c-1", 24U);
+		(void)strncpy(edc_conf->i2c_dev, "/dev/i2c-0", 24U);
 		edc_conf->interface = EDC_IF_I2C;
 		edc->payload_data = edc_conf;
 		edc->ctx = edc_ctx;
