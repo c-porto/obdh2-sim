@@ -3,4 +3,5 @@ obdh2_sim_srcs += files(
   'read_eps.c',
   'read_edc.c',
   'pos_det.c',
+  'control_heater.c',
 )
