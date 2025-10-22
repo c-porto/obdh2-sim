@@ -1,0 +1,16 @@
+[Unit]
+Description=FlatSat2 OBDH2 Simulator
+Requires=network.target
+
+[Service]
+ExecStart=/usr/bin/obdh2-sim
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+ExecStop=/bin/kill -s SIGTERM $MAINPID
+ExecReload=/bin/kill -s SIGHUP $MAINPID
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target
