@@ -1,5 +1,5 @@
 project(
-  'obdh2_sim',
+  'obdh2-sim',
   'c',
   version: '0.1.0',
   default_options: [
