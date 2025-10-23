@@ -2,8 +2,10 @@
 
 #include <predict/predict.h>
 
-void pos_det_thread(void *arg)
+void *pos_det_thread(void *arg)
 {
 	for (;;) {
 	};
+
+	return NULL;
 }

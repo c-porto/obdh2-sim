@@ -1,7 +1,9 @@
 #include <pthread.h>
 
-void control_heater_thread(void *arg)
+void *control_heater_thread(void *arg)
 {
 	for (;;) {
 	};
+
+	return NULL;
 }
