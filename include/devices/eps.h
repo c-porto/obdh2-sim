@@ -41,7 +41,7 @@
 
 #include "eps_data.h"
 
-#define EPS_MODULE_NAME         "EPS"
+#define EPS_MODULE_NAME         "eps"
 
 /**
  * \brief Parameter ID type.
@@ -112,6 +112,15 @@ int eps_get_bat_charge(eps_charge_t *charge);
  * \return The status/error code.
  */
 int eps_get_data(eps_data_t *data);
+
+/**
+ * \brief Prints EPS data.
+ *
+ * \param[in] data is a pointer to the EPS data.
+ *
+ * \return The status/error code.
+ */
+void eps_print_data(const eps_data_t *data);
 
 #endif /* EPS_H_ */
 
