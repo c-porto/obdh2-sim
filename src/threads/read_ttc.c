@@ -15,7 +15,7 @@ void *read_ttc_thread(void *arg)
 	clock_gettime(CLOCK_MONOTONIC, &next);
 
 	for (;;) {
-		next.tv_sec += 10;
+		next.tv_sec += 60;
 
 		if (ttc_init(TTC_0) != 0) {
 			sys_log_print_event_from_module(

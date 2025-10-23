@@ -16,7 +16,8 @@ void *read_eps_thread(void *arg)
 	clock_gettime(CLOCK_MONOTONIC, &next);
 
 	for (;;) {
-		next.tv_sec += 10;
+		next.tv_sec += 60;
+
 		int8_t err = 0;
 		uint8_t retry_count = READ_EPS_MAX_RETRIES;
 
