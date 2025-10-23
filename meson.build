@@ -34,7 +34,6 @@ libpredict = subproject(
   default_options: 'default_library=static',
 )
 
-obdh2_sim_deps += zmq
 obdh2_sim_deps += libmop.get_variable('libmop_dep')
 obdh2_sim_deps += libpredict.get_variable('libpredict_dep')
 
@@ -59,3 +58,7 @@ obdh2_sim = executable(
   c_args: c_args,
   install: true,
 )
+
+install_data('services/obdh2-sim.service',
+             install_dir: get_option('systemd_system_unitdir'),
+             rename: 'obdh2-sim.service')
