@@ -12,6 +12,8 @@ project(
 
 cc = meson.get_compiler('c')
 
+m_dep = cc.find_library('m', required : false)
+
 obdh2_sim_srcs = []
 
 obdh2_sim_inc = include_directories('include', 'src')
@@ -19,6 +21,8 @@ obdh2_sim_inc = include_directories('include', 'src')
 obdh2_sim_deps = []
 
 zmq = dependency('libzmq')
+
+obdh2_sim_deps += m_dep
 
 libmop = subproject(
   'libmop',

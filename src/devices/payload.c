@@ -155,7 +155,7 @@ int payload_edc_init(uint8_t edc_id, struct payload *edc,
 		edc_conf->interface = EDC_IF_I2C;
 		edc->payload_data = edc_conf;
 		edc->ctx = edc_ctx;
-		(void)strncpy(edc->name, "EDC1", PAYLOAD_NAME_MAX);
+		(void)strncpy(edc->name, "edc", PAYLOAD_NAME_MAX);
 		edc->id = edc_id;
 		edc->init = edc_pl_init;
 		edc->write_cmd = edc_pl_write_cmd;
