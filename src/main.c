@@ -13,6 +13,8 @@ extern void *control_heater_thread(void *arg);
 
 int main(void)
 {
+	sys_log_set_log_file("/var/local/obdh-sim.log");
+
 	struct obdh_sim_ctx ctx = { 0 };
 	ctx.tids = calloc(5U, sizeof(pthread_t));
 
@@ -32,4 +34,8 @@ int main(void)
 	for (uint8_t i = 0U; i < 5U; ++i) {
 		pthread_join(ctx.tids[i], NULL);
 	}
+
+	free(ctx.tids);
+
+	return 0;
 }
