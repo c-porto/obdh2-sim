@@ -435,4 +435,48 @@ int ttc_check_failed_pkts(ttc_e dev)
 	return err;
 }
 
+void ttc_print_data(const ttc_e dev, const ttc_data_t *data)
+{
+	const char *dev_str[] = { "TTC0", "TTC1" };
+
+	const char *const module = dev_str[dev];
+
+	sys_log_print_event_from_module(SYS_LOG_INFO, module,
+					"uC Temperature: %u K",
+					(uint32_t)data->temperature_mcu);
+
+	sys_log_print_event_from_module(SYS_LOG_INFO, module,
+					"Radio Temperature: %u K",
+					(uint32_t)data->temperature_radio);
+
+	sl_ttc2_delay_ms(10U);
+
+	sys_log_print_event_from_module(SYS_LOG_INFO, module,
+					"uC Current: %u mA",
+					(uint32_t)data->current_mcu);
+
+	sys_log_print_event_from_module(SYS_LOG_INFO, module,
+					"Radio Current: %u mA",
+					(uint32_t)data->current_radio);
+	sl_ttc2_delay_ms(10U);
+
+	sys_log_print_event_from_module(SYS_LOG_INFO, module,
+					"uC Voltage: %u mV",
+					(uint32_t)data->voltage_mcu);
+
+	sys_log_print_event_from_module(SYS_LOG_INFO, module,
+					"Radio Voltage: %u mV",
+					(uint32_t)data->voltage_radio);
+
+	sys_log_print_event_from_module(SYS_LOG_INFO, module,
+					"TX Counter: %u pkts",
+					(uint32_t)data->tx_packet_counter);
+
+	sl_ttc2_delay_ms(10U);
+
+	sys_log_print_event_from_module(SYS_LOG_INFO, module,
+					"RX Counter: %u pkts",
+					(uint32_t)data->rx_packet_counter);
+}
+
 /** \} End of ttc group */

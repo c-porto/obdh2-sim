@@ -43,7 +43,7 @@
 
 #include "ttc_data.h"
 
-#define TTC_MODULE_NAME            "TTC"
+#define TTC_MODULE_NAME            "ttc"
 
 #define TTC_MAX_FAILED_PACKETS     2U
 
@@ -224,6 +224,22 @@ int ttc_leave_hibernation(ttc_e dev);
  * \return The status/error code.
  */
 int ttc_check_failed_pkts(ttc_e dev);
+
+/**
+ * \brief Prints TTC data fields.
+ *
+ * \param[in] dev is the TTC device to be checked. It can be:
+ * \parblock
+ *      -\b TTC_0
+ *      -\b TTC_1
+ *      .
+ * \endparblock
+ *
+ * \param[in] data is a pointer to the TTC data.
+ *
+ * \return The status/error code.
+ */
+void ttc_print_data(const ttc_e dev, const ttc_data_t *data);
 
 #endif /* TTC_H_ */
 
