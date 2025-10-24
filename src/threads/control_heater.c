@@ -36,17 +36,17 @@ void *control_heater_thread(void *arg)
 			}
 
 			if (eps_set_param(SL_EPS2_REG_BAT_HEATER_1_DUTY_CYCLE,
-					  100U) < 0) {
+					  50U) < 0) {
 				sys_log_print_event_from_module(
 					SYS_LOG_ERROR, "heater",
-					"Failed to set Heater 1 duty to 100%!");
+					"Failed to set Heater 1 duty to 50%!");
 			}
 
 			if (eps_set_param(SL_EPS2_REG_BAT_HEATER_2_DUTY_CYCLE,
-					  100U) < 0) {
+					  50U) < 0) {
 				sys_log_print_event_from_module(
 					SYS_LOG_ERROR, "heater",
-					"Failed to set Heater 2 duty to 100%!");
+					"Failed to set Heater 2 duty to 50%!");
 			}
 		} else {
 			sys_log_print_event_from_module(
