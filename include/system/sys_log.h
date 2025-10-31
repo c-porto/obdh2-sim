@@ -11,4 +11,6 @@ int sys_log_set_log_file(const char *filename);
 
 int sys_log_print_event_from_module(int level, const char *module, const char *format, ...);
 
+int sys_log_print_msg(const char *format, ...);
+
 #endif

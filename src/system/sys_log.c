@@ -59,3 +59,38 @@ int sys_log_print_event_from_module(int level, const char *module,
 
 	return 0;
 }
+
+int sys_log_print_msg(const char *format, ...)
+{
+	bool is_stdout = false;
+	pthread_mutex_lock(&log_mutex);
+
+	FILE *f = NULL;
+
+	if (strcasecmp("stdout", log_file) == 0) {
+		f = stdout;
+		is_stdout = true;
+	} else {
+		f = fopen(log_file, "a");
+	}
+
+	if (!f) {
+		perror("sys_log: fopen");
+		return -1;
+	}
+
+	va_list args;
+	va_start(args, format);
+	vfprintf(f, format, args);
+	va_end(args);
+
+	fprintf(f, "\n");
+	fflush(f);
+
+	if (!is_stdout)
+		fclose(f);
+
+	pthread_mutex_unlock(&log_mutex);
+
+	return 0;
+}
