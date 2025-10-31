@@ -225,7 +225,7 @@ int ttc_get_data(ttc_e dev, ttc_data_t *data)
 		} else {
 			sys_log_print_event_from_module(
 				SYS_LOG_ERROR, TTC_MODULE_NAME,
-				"Error reading the data from the TTC device %u!",
+				"Failed to check the TTC device %u!",
 				ttc_config.id);
 		}
 	}
