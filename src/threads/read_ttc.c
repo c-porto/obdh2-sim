@@ -33,12 +33,16 @@ void *read_ttc_thread(void *arg)
 			sys_log_print_event_from_module(
 				SYS_LOG_ERROR, "ReadTTC",
 				"Error reading data from the TTC 0 device!");
+		} else {
+			ttc_print_data(TTC_0, &ttc0_data);
 		}
 
 		if (ttc_get_data(TTC_1, &ttc1_data) != 0) {
 			sys_log_print_event_from_module(
 				SYS_LOG_ERROR, "ReadTTC",
 				"Error reading data from the TTC 1 device!");
+		} else {
+			ttc_print_data(TTC_1, &ttc1_data);
 		}
 
 		/* Checks if there was too many decoding errors on TTC */
@@ -53,10 +57,6 @@ void *read_ttc_thread(void *arg)
 				SYS_LOG_ERROR, "ReadTTC",
 				"Error checking for decode errors from TTC 1 device!");
 		}
-
-		ttc_print_data(TTC_0, &ttc0_data);
-
-		ttc_print_data(TTC_1, &ttc1_data);
 
 		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL);
 	};
