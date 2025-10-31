@@ -11,36 +11,36 @@
 static void edc_print_hk(struct payload *edc, edc_hk_t *hk)
 {
 	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Elapsed Time: lu% sec",
+					"Elapsed Time: %lu sec",
 					hk->elapsed_time);
 	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Analog current: u% mA",
+					"Analog current: %u mA",
 					hk->current_supply_a);
 	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Digital current: u% mA",
+					"Digital current: %u mA",
 					hk->current_supply_d);
 	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"System Voltage: u% mV",
+					"System Voltage: %u mV",
 					hk->voltage_supply);
 	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Temperature: i% oC", hk->temp);
+					"Temperature: %i oC", hk->temp);
 	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"System Voltage: lu% mV",
+					"System Voltage: %lu mV",
 					hk->voltage_supply);
 	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"RX Counter: u% pkts", hk->num_rx_ptt);
+					"RX Counter: %u pkts", hk->num_rx_ptt);
 }
 
 static void edc_print_state(struct payload *edc, edc_state_t *state)
 {
 	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Current Time: lu% sec",
+					"Current Time: %lu sec",
 					state->current_time);
 	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"PTT Available: u% pkts",
+					"PTT Available: %u pkts",
 					state->ptt_available);
 	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"PTT Paused: u%", state->ptt_is_paused);
+					"PTT Paused: %u", state->ptt_is_paused);
 }
 
 static void edc_print_ptt(struct payload *edc, edc_ptt_t *ptt)
@@ -48,11 +48,11 @@ static void edc_print_ptt(struct payload *edc, edc_ptt_t *ptt)
 	int32_t ptt_power = -67 + (20 * log10(ptt->carrier_abs / 32768.0));
 
 	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Time Tag: lu% sec", ptt->time_tag);
+					"Time Tag: %lu sec", ptt->time_tag);
 	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Signal Power: li% dBm", ptt_power);
+					"Signal Power: %li dBm", ptt_power);
 	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Carrier Freq: li% kHz",
+					"Carrier Freq: %li kHz",
 					ptt->carrier_freq);
 }
 
