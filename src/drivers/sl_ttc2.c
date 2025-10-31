@@ -36,6 +36,7 @@
 
 #include <string.h>
 
+#include <system/sys_log.h>
 #include <drivers/sl_ttc2.h>
 
 #define CRC8_INITIAL_VAL 0x00U /* CRC8-CCITT initial value. */
@@ -96,6 +97,10 @@ int sl_ttc2_check_device(sl_ttc2_config_t *config)
 
 		if (err == 0) {
 			if (id != ref_id) {
+				sys_log_print_event_from_module(
+					SYS_LOG_ERROR, "ttc",
+					"Expected id [%#x], got [%#x]", ref_id,
+					id);
 				err = -1;
 			}
 		}
