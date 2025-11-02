@@ -4,56 +4,54 @@
 #include <libmop/payload.h>
 
 #include <system/sys_log.h>
+#include <system/db.h>
 #include <devices/payload.h>
 #include <drivers/edc.h>
 #include <time.h>
 
-static void edc_print_hk(struct payload *edc, edc_hk_t *hk)
+static void edc_save_hk(struct db_handle *db, struct payload *edc, edc_hk_t *hk)
 {
-	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Elapsed Time: %lu sec",
-					hk->elapsed_time);
-	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Analog current: %u mA",
-					hk->current_supply_a);
-	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Digital current: %u mA",
-					hk->current_supply_d);
-	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"System Voltage: %u mV",
-					hk->voltage_supply);
-	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Temperature: %i oC", hk->temp);
-	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"System Voltage: %lu mV",
-					hk->voltage_supply);
-	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"RX Counter: %u pkts", hk->num_rx_ptt);
+	if (db->handle) {
+		tm_db_add_entry(db, edc->name, STRINGZ(elapsed_time),
+				(double)hk->elapsed_time);
+		tm_db_add_entry(db, edc->name, STRINGZ(current_supply_a),
+				(double)hk->current_supply_a);
+		tm_db_add_entry(db, edc->name, STRINGZ(current_supply_d),
+				(double)hk->current_supply_d);
+		tm_db_add_entry(db, edc->name, STRINGZ(voltage_supply),
+				(double)hk->voltage_supply);
+		tm_db_add_entry(db, edc->name, STRINGZ(temp), (double)hk->temp);
+		tm_db_add_entry(db, edc->name, STRINGZ(temp),
+				(double)hk->num_rx_ptt);
+	}
 }
 
-static void edc_print_state(struct payload *edc, edc_state_t *state)
+static void edc_save_state(struct db_handle *db, struct payload *edc,
+			   edc_state_t *state)
 {
-	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Current Time: %lu sec",
-					state->current_time);
-	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"PTT Available: %u pkts",
-					state->ptt_available);
-	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"PTT Paused: %u", state->ptt_is_paused);
+	if (db->handle) {
+		tm_db_add_entry(db, edc->name, STRINGZ(current_time),
+				(double)state->current_time);
+		tm_db_add_entry(db, edc->name, STRINGZ(ptt_available),
+				(double)state->ptt_available);
+		tm_db_add_entry(db, edc->name, STRINGZ(ptt_is_paused),
+				(double)state->ptt_is_paused);
+	}
 }
 
-static void edc_print_ptt(struct payload *edc, edc_ptt_t *ptt)
+static void edc_save_ptt(struct db_handle *db, struct payload *edc,
+			 edc_ptt_t *ptt)
 {
 	int32_t ptt_power = -67 + (20 * log10(ptt->carrier_abs / 32768.0));
 
-	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Time Tag: %lu sec", ptt->time_tag);
-	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Signal Power: %li dBm", ptt_power);
-	sys_log_print_event_from_module(SYS_LOG_INFO, edc->name,
-					"Carrier Freq: %li kHz",
-					ptt->carrier_freq);
+	if (db->handle) {
+		tm_db_add_entry(db, edc->name, STRINGZ(time_tag),
+				(double)ptt->time_tag);
+		tm_db_add_entry(db, edc->name, STRINGZ(ptt_power),
+				(double)ptt_power);
+		tm_db_add_entry(db, edc->name, STRINGZ(ptt_carrier_freq),
+				(double)ptt->carrier_freq);
+	}
 }
 
 void *read_edc_thread(void *arg)
@@ -67,6 +65,13 @@ void *read_edc_thread(void *arg)
 	edc_hk_t hk;
 	edc_state_t state;
 	edc_ptt_t ptt;
+
+	struct db_handle db = { 0 };
+	const char *db_file = "/var/local/edc.sqlite3";
+
+	if (create_tm_db(&db, db_file) < 0)
+		sys_log_print_event_from_module(SYS_LOG_ERROR, "edc",
+						"Failed to create DB!");
 
 	if (payload_edc_init(1U, &edc, &edc_conf, &edc_ctx) != 0) {
 		sys_log_print_event_from_module(
@@ -107,7 +112,7 @@ void *read_edc_thread(void *arg)
 
 		if (payload_read_data(&edc, EDC_FRAME_ID_HK, (uint8_t *)&hk,
 				      sizeof(hk)) == 0) {
-			edc_print_hk(&edc, &hk);
+			edc_save_hk(&db, &edc, &hk);
 		} else {
 			sys_log_print_event_from_module(SYS_LOG_ERROR, edc.name,
 							"Failed to read hk!");
@@ -117,7 +122,7 @@ void *read_edc_thread(void *arg)
 
 		if (payload_read_data(&edc, EDC_FRAME_ID_STATE,
 				      (uint8_t *)&state, sizeof(state)) == 0) {
-			edc_print_state(&edc, &state);
+			edc_save_state(&db, &edc, &state);
 
 			if (state.ptt_available > 0) {
 				for (uint8_t i = 0; i < state.ptt_available;
@@ -126,7 +131,7 @@ void *read_edc_thread(void *arg)
 						    &edc, EDC_FRAME_ID_PTT,
 						    (uint8_t *)&ptt,
 						    sizeof(ptt)) == 0) {
-						edc_print_ptt(&edc, &ptt);
+						edc_save_ptt(&db, &edc, &ptt);
 					} else {
 						sys_log_print_event_from_module(
 							SYS_LOG_ERROR, edc.name,

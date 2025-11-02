@@ -4,12 +4,19 @@
 #include <predict/unsorted.h>
 
 #include <system/context.h>
+#include <system/db.h>
 #include <system/sys_log.h>
 
 void *pos_det_thread(void *arg)
 {
 	struct obdh_sim_ctx *ctx = arg;
 	struct timespec next = { 0 };
+	struct db_handle db = { 0 };
+	const char *db_file = "/var/local/pos_det.sqlite3";
+
+	if (create_tm_db(&db, db_file) < 0)
+		sys_log_print_event_from_module(SYS_LOG_ERROR, "pos_det",
+						"Failed to create DB!");
 
 	predict_orbital_elements_t satellite;
 	struct predict_sgp4 sgp4_model;
@@ -54,6 +61,12 @@ void *pos_det_thread(void *arg)
 			pthread_mutex_lock(&ctx->lock);
 			ctx->cond.eclipsed = my_orbit.eclipsed;
 			pthread_mutex_unlock(&ctx->lock);
+
+			if (db.handle) {
+				tm_db_add_entry(&db, "pos_det", "lat", lat);
+				tm_db_add_entry(&db, "pos_det", "lon", lon);
+				tm_db_add_entry(&db, "pos_det", "alt", alt);
+			}
 		} else {
 			sys_log_print_event_from_module(
 				SYS_LOG_ERROR, "pos",
