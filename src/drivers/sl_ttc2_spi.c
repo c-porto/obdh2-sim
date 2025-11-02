@@ -108,6 +108,12 @@ int sl_ttc2_spi_transfer(sl_ttc2_config_t *config, uint8_t *wdata,
 		perror("sl_ttc: SPI tranfer!");
 	}
 
+	if (ret == len) {
+		ret = 0;
+	} else {
+		ret = -1;
+	}
+
 	close(fd);
 
 	return ret;
