@@ -66,6 +66,7 @@ void *pos_det_thread(void *arg)
 				tm_db_add_entry(&db, "pos_det", "lat", lat);
 				tm_db_add_entry(&db, "pos_det", "lon", lon);
 				tm_db_add_entry(&db, "pos_det", "alt", alt);
+				tm_db_add_entry(&db, "pos_det", "eclipsed", (double)my_orbit.eclipsed);
 			}
 		} else {
 			sys_log_print_event_from_module(
