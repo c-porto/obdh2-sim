@@ -9,7 +9,8 @@ struct obdh_sim_ctx {
 	pthread_t *tids;
 	union {
 		struct {
-			uint8_t reserved : 7;
+			uint8_t reserved : 6;
+			uint8_t in_brazil : 1;
 			uint8_t eclipsed : 1;
 		};
 		uint8_t ext;
