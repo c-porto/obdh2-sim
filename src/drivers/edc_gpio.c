@@ -38,7 +38,7 @@
 
 int edc_gpio_init(edc_config_t *config)
 {
-	config->chip = gpiod_chip_open_by_label("edc-gpio-en");
+	config->chip = gpiod_chip_open_by_name("gpiochip0");
 
 	if (!config->chip) {
 		perror("open gpiod chip edc");
