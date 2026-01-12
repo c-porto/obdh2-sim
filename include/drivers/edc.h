@@ -40,106 +40,113 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <gpiod.h>
 
-#define EDC_MODULE_NAME             "EDC"
+#define EDC_MODULE_NAME "EDC"
 
-#define EDC_SLAVE_ADDRESS           0x13    /**< 7-bit slave address. */
+#define EDC_SLAVE_ADDRESS 0x13 /**< 7-bit slave address. */
 
 /* Commands IDs */
-#define EDC_CMD_RTC_SET             0x01U   /**< Sets the RTC time. The parameters is the number of seconds elapsed since J2000 epoch. */
-#define EDC_CMD_PTT_POP             0x06U   /**< Removes current PTT package from the PTT Package FIFO Buffer, allowing the reading of the next PTT package, if existent. */
-#define EDC_CMD_PTT_PAUSE           0x08U   /**< Pauses the PTT Decoding Task. At initialization the PTT Task is paused. */
-#define EDC_CMD_PTT_RESUME          0x09U   /**< Resumes the PTT Decoding Task. */
-#define EDC_CMD_SAMPLER_START       0x0AU   /**< Start ADC Sample task. This trigger the sampling of a sequence of 2048 I&Q samples from the RF Front End. */
-#define EDC_CMD_GET_STATE           0x30U   /**< Causes the transmission of System State Frame through RS-485 interface. */
-#define EDC_CMD_GET_PTT_PKG         0x31U   /**< Causes the transmission of current PTT Decoder Frame through RS-485 interface. */
-#define EDC_CMD_GET_HK_PKG          0x32U   /**< Updates HK Frame information, and transmit it through the RS-485 interface. */
-#define EDC_CMD_GET_ADC_SEQ         0x34U   /**< Causes the transmission of current ADC Sampler Frame through RS-485 interface. */
-#define EDC_CMD_ECHO                0xF0U   /**< Cause the transmission of the string "ECHO" in the debug interface. */
+#define EDC_CMD_RTC_SET \
+	0x01U /**< Sets the RTC time. The parameters is the number of seconds elapsed since J2000 epoch. */
+#define EDC_CMD_PTT_POP \
+	0x06U /**< Removes current PTT package from the PTT Package FIFO Buffer, allowing the reading of the next PTT package, if existent. */
+#define EDC_CMD_PTT_PAUSE \
+	0x08U /**< Pauses the PTT Decoding Task. At initialization the PTT Task is paused. */
+#define EDC_CMD_PTT_RESUME 0x09U /**< Resumes the PTT Decoding Task. */
+#define EDC_CMD_SAMPLER_START \
+	0x0AU /**< Start ADC Sample task. This trigger the sampling of a sequence of 2048 I&Q samples from the RF Front End. */
+#define EDC_CMD_GET_STATE \
+	0x30U /**< Causes the transmission of System State Frame through RS-485 interface. */
+#define EDC_CMD_GET_PTT_PKG \
+	0x31U /**< Causes the transmission of current PTT Decoder Frame through RS-485 interface. */
+#define EDC_CMD_GET_HK_PKG \
+	0x32U /**< Updates HK Frame information, and transmit it through the RS-485 interface. */
+#define EDC_CMD_GET_ADC_SEQ \
+	0x34U /**< Causes the transmission of current ADC Sampler Frame through RS-485 interface. */
+#define EDC_CMD_ECHO \
+	0xF0U /**< Cause the transmission of the string "ECHO" in the debug interface. */
 
 /* Frames IDs */
-#define EDC_FRAME_ID_STATE          0x11U   /**< State frame. */
-#define EDC_FRAME_ID_PTT            0x22U   /**< PTT frame. */
-#define EDC_FRAME_ID_ADC_SEQ        0x33U   /**< ADC sequence frame. */
-#define EDC_FRAME_ID_HK             0x44U   /**< Housekeeping frame. */
+#define EDC_FRAME_ID_STATE 0x11U /**< State frame. */
+#define EDC_FRAME_ID_PTT 0x22U /**< PTT frame. */
+#define EDC_FRAME_ID_ADC_SEQ 0x33U /**< ADC sequence frame. */
+#define EDC_FRAME_ID_HK 0x44U /**< Housekeeping frame. */
 
 /* Frames length */
-#define EDC_FRAME_STATE_LEN         9       /**< State frame length. */
-#define EDC_FRAME_PTT_LEN           49      /**< PTT frame length. */
-#define EDC_FRAME_ADC_SEQ_LEN       8200    /**< ADC sequence frame length. */
-#define EDC_FRAME_HK_LEN            26      /**< Housekeeping frame length. */
-#define EDC_FRAME_ECHO_LEN          4       /**< Echo frame length. */
+#define EDC_FRAME_STATE_LEN 9 /**< State frame length. */
+#define EDC_FRAME_PTT_LEN 49 /**< PTT frame length. */
+#define EDC_FRAME_ADC_SEQ_LEN 8200 /**< ADC sequence frame length. */
+#define EDC_FRAME_HK_LEN 26 /**< Housekeeping frame length. */
+#define EDC_FRAME_ECHO_LEN 4 /**< Echo frame length. */
 
 /**
  * \brief EDC interfaces.
  */
-typedef enum
-{
-    EDC_IF_UART=0,                          /**< UART interface */
-    EDC_IF_I2C                              /**< I2C interface */
+typedef enum {
+	EDC_IF_UART = 0, /**< UART interface */
+	EDC_IF_I2C /**< I2C interface */
 } edc_if_t;
 
 /**
  * \brief EDC configuration parameters.
  */
-typedef struct
-{
-    edc_if_t interface;                     /**< Interface option (EDC_IF_UART or EDC_IF_I2C). */
-    char i2c_dev[24];                       /**< I2C character device file name. */
-    uint32_t i2c_bitrate;                   /**< I2C bitrate in bps. */
-    char uart_dev[24];                      /**< UART character device file name. */
-    uint16_t en_pin;                        /**< Enable pin. */
+typedef struct {
+	edc_if_t interface; /**< Interface option (EDC_IF_UART or EDC_IF_I2C). */
+	char i2c_dev[24]; /**< I2C character device file name. */
+	uint32_t i2c_bitrate; /**< I2C bitrate in bps. */
+	char uart_dev[24]; /**< UART character device file name. */
+	uint16_t en_pin; /**< Enable pin. */
+	struct gpiod_chip *chip;
+	struct gpiod_line *en_line;
 } edc_config_t;
 
 /**
  * \brief EDC command.
  */
-typedef struct
-{
-    uint8_t id;         /**< Command ID. */
-    uint32_t param;     /**< Command param. */
+typedef struct {
+	uint8_t id; /**< Command ID. */
+	uint32_t param; /**< Command param. */
 } edc_cmd_t;
 
 /**
  * \brief State data.
  */
-typedef struct
-{
-    uint32_t current_time;                  /**< Current time in number of seconds elapsed since J2000 epoch. */
-    uint8_t ptt_available;                  /**< Number of PTT Package available for reading. */
-    bool ptt_is_paused;                     /**< PTT Decoder task status. */
-    uint8_t sampler_state;                  /**< ADC Sampler state. */
+typedef struct {
+	uint32_t current_time; /**< Current time in number of seconds elapsed since J2000 epoch. */
+	uint8_t ptt_available; /**< Number of PTT Package available for reading. */
+	bool ptt_is_paused; /**< PTT Decoder task status. */
+	uint8_t sampler_state; /**< ADC Sampler state. */
 } edc_state_t;
 
 /**
  * \brief PTT data.
  */
-typedef struct
-{
-    uint32_t time_tag;                      /**< PTT signal receiving time in number of seconds elapsed since J2000 epoch. */
-    uint8_t error_code;                     /**< PTT error code. */
-    int32_t carrier_freq;                   /**< Carrier frequency. */
-    uint16_t carrier_abs;                   /**< Carrier amplitude at ADC interface output. */
-    uint8_t msg_byte_length;                /**< user_msg length in number of bytes. */
-    uint8_t user_msg[36];                   /**< User Message as specified in ARGOS-2 PTT-A2 signal specification. */
+typedef struct {
+	uint32_t time_tag; /**< PTT signal receiving time in number of seconds elapsed since J2000 epoch. */
+	uint8_t error_code; /**< PTT error code. */
+	int32_t carrier_freq; /**< Carrier frequency. */
+	uint16_t carrier_abs; /**< Carrier amplitude at ADC interface output. */
+	uint8_t msg_byte_length; /**< user_msg length in number of bytes. */
+	uint8_t user_msg
+		[36]; /**< User Message as specified in ARGOS-2 PTT-A2 signal specification. */
 } edc_ptt_t;
 
 /**
  * \brief Housekeeping data.
  */
-typedef struct
-{
-    uint32_t current_time;                  /**< Current time in number of seconds elapsed since J2000 epoch. */
-    uint32_t elapsed_time;                  /**< Elapsed time since last system initialization in seconds. */
-    uint16_t current_supply_d;              /**< Current supply of the digital components in mA. */
-    uint16_t current_supply_a;              /**< Current supply of the RF front-end in mA. */
-    uint16_t voltage_supply;                /**< System voltage supply in mV. */
-    int8_t temp;                            /**< EDC board temperature in Celsius. */
-    uint8_t pll_sync_bit;                   /**< RF Front End LO frequency synthesizer indicator of PLL synchronization. */
-    int16_t adc_rms;                        /**< RMS level at front-end output. */
-    uint32_t num_rx_ptt;                    /**< Number of generated PTT package since last system initialization. */
-    uint8_t max_parl_decod;                 /**< Maximum number of active PTT decoder channels registered since last system initialization. */
-    uint8_t mem_err_count;                  /**< Number of double bit errors detected by MSS data memory controller since last system initialization. */
+typedef struct {
+	uint32_t current_time; /**< Current time in number of seconds elapsed since J2000 epoch. */
+	uint32_t elapsed_time; /**< Elapsed time since last system initialization in seconds. */
+	uint16_t current_supply_d; /**< Current supply of the digital components in mA. */
+	uint16_t current_supply_a; /**< Current supply of the RF front-end in mA. */
+	uint16_t voltage_supply; /**< System voltage supply in mV. */
+	int8_t temp; /**< EDC board temperature in Celsius. */
+	uint8_t pll_sync_bit; /**< RF Front End LO frequency synthesizer indicator of PLL synchronization. */
+	int16_t adc_rms; /**< RMS level at front-end output. */
+	uint32_t num_rx_ptt; /**< Number of generated PTT package since last system initialization. */
+	uint8_t max_parl_decod; /**< Maximum number of active PTT decoder channels registered since last system initialization. */
+	uint8_t mem_err_count; /**< Number of double bit errors detected by MSS data memory controller since last system initialization. */
 } edc_hk_t;
 
 /**

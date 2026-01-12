@@ -24,8 +24,11 @@ zmq = dependency('libzmq')
 
 sqlite3_dep = dependency('sqlite3')
 
+gpiod_dep = dependency('libgpiod')
+
 obdh2_sim_deps += m_dep
 obdh2_sim_deps += sqlite3_dep
+obdh2_sim_deps += gpiod_dep
 
 libmop = subproject(
   'libmop',

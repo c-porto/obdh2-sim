@@ -34,22 +34,54 @@
  */
 
 #include <drivers/edc.h>
-
-/* TODO: Unsupported */
+#include <stdio.h>
 
 int edc_gpio_init(edc_config_t *config)
 {
-    return 0;
+	config->chip = gpiod_chip_open_by_label("edc-gpio-en");
+
+	if (!config->chip) {
+		perror("open gpiod chip edc");
+		return -1;
+	}
+
+	config->en_line = gpiod_chip_get_line(config->chip, config->en_pin);
+
+	if (!config->en_line) {
+		perror("get gpiod line edc");
+		gpiod_chip_close(config->chip);
+		return -1;
+	}
+
+	/* Request line as output, default LOW */
+	int ret = gpiod_line_request_output(config->en_line, "edc-enable", 0);
+	if (ret < 0) {
+		perror("request gpiod line output edc");
+		gpiod_chip_close(config->chip);
+		return -1;
+	}
+
+	return 0;
 }
 
 int edc_gpio_set(edc_config_t *config)
 {
-    return 0;
+	if (!config->chip || !config->en_line)
+		return -1;
+
+	gpiod_line_set_value(config->en_line, 1);
+
+	return 0;
 }
 
 int edc_gpio_clear(edc_config_t *config)
 {
-    return 0;
+	if (!config->chip || !config->en_line)
+		return -1;
+
+	gpiod_line_set_value(config->en_line, 0);
+
+	return 0;
 }
 
 /** \} End of edc group */

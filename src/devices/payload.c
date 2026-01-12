@@ -135,12 +135,34 @@ static int edc_pl_get_clock(struct payload *pl, struct payload_timestamp *ts)
 
 static int edc_pl_enable(struct payload *pl)
 {
-	return -PL_ERRNO_UNSUPPORTED_FN;
+	edc_config_t *conf = pl->payload_data;
+
+	if (edc_enable(conf) != 0)
+		return -PL_ERRNO_UNKNOWN;
+
+	struct timespec ts;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	pl->ctx->active = 1U;
+	pl->ctx->ctx_change_ts.tv_sec = ts.tv_sec;
+	pl->ctx->ctx_change_ts.tv_nsec = ts.tv_nsec;
+
+	return PL_OK;
 }
 
 static int edc_pl_disable(struct payload *pl)
 {
-	return -PL_ERRNO_UNSUPPORTED_FN;
+	edc_config_t *conf = pl->payload_data;
+
+	if (edc_disable(conf) != 0)
+		return -PL_ERRNO_UNKNOWN;
+
+	struct timespec ts;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	pl->ctx->active = 0U;
+	pl->ctx->ctx_change_ts.tv_sec = ts.tv_sec;
+	pl->ctx->ctx_change_ts.tv_nsec = ts.tv_nsec;
+
+	return PL_OK;
 }
 
 int payload_edc_init(uint8_t edc_id, struct payload *edc,
