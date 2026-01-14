@@ -40,7 +40,7 @@ void *read_ttc_thread(void *arg)
 	const char *db_file = "/var/local/ttc.sqlite3";
 
 	if (create_tm_db(&db, db_file) < 0)
-		sys_log_print_event_from_module(SYS_LOG_ERROR, "eps",
+		sys_log_print_event_from_module(SYS_LOG_ERROR, "ReadTTC",
 						"Failed to create DB!");
 
 	clock_gettime(CLOCK_MONOTONIC, &next);

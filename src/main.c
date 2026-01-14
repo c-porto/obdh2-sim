@@ -10,13 +10,14 @@ extern void *read_ttc_thread(void *arg);
 extern void *read_eps_thread(void *arg);
 extern void *read_edc_thread(void *arg);
 extern void *control_heater_thread(void *arg);
+extern void *read_sys_info_thread(void *arg);
 
 int main(void)
 {
 	sys_log_set_log_file("/var/local/obdh-sim.log");
 
 	struct obdh_sim_ctx ctx = { 0 };
-	ctx.tids = calloc(5U, sizeof(pthread_t));
+	ctx.tids = calloc(6U, sizeof(pthread_t));
 
 	if (pthread_mutex_init(&ctx.lock, NULL) < 0) {
 		sys_log_print_event_from_module(
@@ -30,8 +31,9 @@ int main(void)
 	pthread_create(&ctx.tids[2], NULL, read_eps_thread, (void *)&ctx);
 	pthread_create(&ctx.tids[3], NULL, read_edc_thread, (void *)&ctx);
 	pthread_create(&ctx.tids[4], NULL, control_heater_thread, (void *)&ctx);
+	pthread_create(&ctx.tids[5], NULL, read_sys_info_thread, (void *)&ctx);
 
-	for (uint8_t i = 0U; i < 5U; ++i) {
+	for (uint8_t i = 0U; i < 6U; ++i) {
 		pthread_join(ctx.tids[i], NULL);
 	}
 
