@@ -76,7 +76,7 @@ void *read_edc_thread(void *arg)
 		sys_log_print_event_from_module(SYS_LOG_ERROR, "edc",
 						"Failed to create DB!");
 
-	edc_conf.en_pin = 0U;
+	edc_conf.en_pin = 1U;
 
 	if (payload_edc_init(1U, &edc, &edc_conf, &edc_ctx) != 0) {
 		sys_log_print_event_from_module(
