@@ -4,6 +4,7 @@
 #include <system/sys_log.h>
 #include <devices/ttc.h>
 #include <devices/ttc_data.h>
+#include <unistd.h>
 
 static void ttc_save_data(struct db_handle *db, ttc_data_t *data,
 			  const char *ttc)
@@ -33,7 +34,6 @@ void *read_ttc_thread(void *arg)
 	(void)arg;
 
 	struct timespec next = { 0 };
-	ttc_data_t ttc0_data;
 	ttc_data_t ttc1_data;
 
 	struct db_handle db = { 0 };
@@ -48,24 +48,10 @@ void *read_ttc_thread(void *arg)
 	for (;;) {
 		next.tv_sec += 60;
 
-		if (ttc_init(TTC_0) != 0) {
-			sys_log_print_event_from_module(
-				SYS_LOG_ERROR, "ReadTTC",
-				"Error initializing the TTC device!");
-		}
-
 		if (ttc_init(TTC_1) != 0) {
 			sys_log_print_event_from_module(
 				SYS_LOG_ERROR, "ReadTTC",
 				"Error initializing the TTC device!");
-		}
-
-		if (ttc_get_data(TTC_0, &ttc0_data) != 0) {
-			sys_log_print_event_from_module(
-				SYS_LOG_ERROR, "ReadTTC",
-				"Error reading data from the TTC 0 device!");
-		} else {
-			ttc_save_data(&db, &ttc0_data, "ttc0");
 		}
 
 		if (ttc_get_data(TTC_1, &ttc1_data) != 0) {
@@ -76,17 +62,26 @@ void *read_ttc_thread(void *arg)
 			ttc_save_data(&db, &ttc1_data, "ttc1");
 		}
 
-		/* Checks if there was too many decoding errors on TTC */
-		if (ttc_check_failed_pkts(TTC_0) != 0) {
-			sys_log_print_event_from_module(
-				SYS_LOG_ERROR, "ReadTTC",
-				"Error checking for decode errors from TTC 0 device!");
-		}
-
 		if (ttc_check_failed_pkts(TTC_1) != 0) {
 			sys_log_print_event_from_module(
 				SYS_LOG_ERROR, "ReadTTC",
 				"Error checking for decode errors from TTC 1 device!");
+		}
+
+		usleep(1000000);
+
+		uint8_t pkt[128];
+
+		for (uint8_t i = 0U; i < sizeof(pkt); ++i) {
+			pkt[i] = i;
+		}
+
+		int res = ttc_send(TTC_1, pkt, sizeof(pkt));
+
+		if (res != 0) {
+			sys_log_print_event_from_module(
+				SYS_LOG_ERROR, "ReadTTC",
+				"Failed to transmit packet!");
 		}
 
 		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL);
