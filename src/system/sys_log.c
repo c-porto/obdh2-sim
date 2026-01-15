@@ -30,27 +30,39 @@ int sys_log_print_event_from_module(int level, const char *module,
 	FILE *f = NULL;
 
 	if (strcasecmp("stdout", log_file) == 0) {
-		f = stdout;
 		is_stdout = true;
 	} else {
 		f = fopen(log_file, "a");
+		if (!f) {
+			perror("sys_log: fopen");
+			return -1;
+		}
 	}
 
-	if (!f) {
-		perror("sys_log: fopen");
-		return -1;
-	}
+	if (f)
+		fprintf(f, "%lu.%03lu %s %s: ", ts.tv_sec, ts.tv_nsec / 1000U,
+			log_level_strings[level], module);
 
-	fprintf(f, "%lu.%03lu %s %s: ", ts.tv_sec, ts.tv_nsec / 1000U,
+	fprintf(stdout, "%lu.%03lu %s %s: ", ts.tv_sec, ts.tv_nsec / 1000U,
 		log_level_strings[level], module);
 
 	va_list args;
 	va_start(args, format);
-	vfprintf(f, format, args);
+
+	if (f)
+		vfprintf(f, format, args);
+
+	vfprintf(stdout, format, args);
+
 	va_end(args);
 
-	fprintf(f, "\n");
-	fflush(f);
+	if (f) {
+		fprintf(f, "\n");
+		fflush(f);
+	}
+
+	fprintf(stdout, "\n");
+	fflush(stdout);
 
 	if (!is_stdout)
 		fclose(f);
