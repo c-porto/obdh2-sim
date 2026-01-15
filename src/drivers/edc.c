@@ -34,6 +34,7 @@
  * \{
  */
 
+#include "system/sys_log.h"
 #include <math.h>
 #include <string.h>
 
@@ -166,6 +167,7 @@ int edc_check_device(edc_config_t *config)
 
     if (edc_get_state_pkg(config, status) != EDC_FRAME_STATE_LEN)
     {
+        sys_log_print_event_from_module(SYS_LOG_ERROR, "edc", "Failed to check device!");
         err = -1;
     }
 

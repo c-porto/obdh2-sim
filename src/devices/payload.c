@@ -1,12 +1,15 @@
-#include <libmop/payload.h>
-#include <libmop/pl_errno.h>
-#include <libmop/pl_list.h>
-#include <devices/payload.h>
-#include <drivers/edc.h>
-
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+
+#include <libmop/payload.h>
+#include <libmop/pl_errno.h>
+#include <libmop/pl_list.h>
+
+#include <system/sys_log.h>
+#include <devices/payload.h>
+#include <devices/payload.h>
+#include <drivers/edc.h>
 
 #define PAYLOAD_UNIX_TO_J2000_EPOCH(x) ((x) - 946684800)
 
@@ -172,8 +175,8 @@ int payload_edc_init(uint8_t edc_id, struct payload *edc,
 
 	switch (edc_id) {
 	case 1U:
-		(void)strncpy(edc_conf->i2c_dev, "/dev/i2c-0", 24U);
-		edc_conf->interface = EDC_IF_I2C;
+		edc_conf->uart_port = "/dev/ttyS1";
+		edc_conf->interface = EDC_IF_UART;
 		edc->payload_data = edc_conf;
 		edc->ctx = edc_ctx;
 		(void)strncpy(edc->name, "edc", PAYLOAD_NAME_MAX);
@@ -197,7 +200,9 @@ int payload_edc_init(uint8_t edc_id, struct payload *edc,
 	}
 
 	if (err != 0)
-		printf("PAYLOAD: Failed to initialize EDC payload handle.\n");
+		sys_log_print_event_from_module(
+			SYS_LOG_ERROR, "payload",
+			"Failed to initialize EDC payload handle.");
 
 	return err;
 }

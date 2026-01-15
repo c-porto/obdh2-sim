@@ -95,7 +95,7 @@ typedef struct {
 	edc_if_t interface; /**< Interface option (EDC_IF_UART or EDC_IF_I2C). */
 	char i2c_dev[24]; /**< I2C character device file name. */
 	uint32_t i2c_bitrate; /**< I2C bitrate in bps. */
-	char uart_dev[24]; /**< UART character device file name. */
+	const char *uart_port; /**< UART character device file name. */
 	uint16_t en_pin; /**< Enable pin. */
 	struct gpiod_chip *chip;
 	struct gpiod_line *en_line;
