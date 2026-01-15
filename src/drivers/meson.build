@@ -11,4 +11,5 @@ obdh2_sim_srcs += files(
   'sl_ttc2_delay.c',
   'sl_ttc2_spi.c',
   'sl_ttc2_mutex.c',
+  'uart.c',
 )
