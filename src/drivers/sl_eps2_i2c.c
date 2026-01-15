@@ -42,7 +42,7 @@
 
 #include <drivers/sl_eps2.h>
 
-#define I2C_CTRL_PATH "/dev/i2c-2"
+#define I2C_CTRL_PATH "/dev/i2c-0"
 
 int sl_eps2_i2c_init(sl_eps2_config_t config)
 {

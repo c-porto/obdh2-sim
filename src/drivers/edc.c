@@ -46,6 +46,7 @@ int edc_init(edc_config_t *config)
 
     if (edc_gpio_init(config) == 0)
     {
+	edc_delay_ms(500);
         if (edc_enable(config) == 0)
         {
             switch(config->interface)
