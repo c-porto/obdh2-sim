@@ -1,7 +1,7 @@
 project(
   'obdh2-sim',
   'c',
-  version: '0.1.6',
+  version: '0.2.0',
   default_options: [
     'warning_level=3',
     'c_std=gnu11',
