@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <stdint.h>
 
+#include <system/context.h>
 #include <system/sys_log.h>
 #include <system/db.h>
 #include <devices/eps.h>
@@ -78,10 +79,10 @@ static void eps_save_data(struct db_handle *db, eps_data_t *data)
 
 void *read_eps_thread(void *arg)
 {
-	(void)arg;
+	struct obdh_sim_ctx *ctx = arg;
 
 	struct timespec next = { 0 };
-	eps_data_t eps_data;
+	eps_data_t eps_data = { 0 };
 
 	struct db_handle db = { 0 };
 	const char *db_file = "/var/local/eps.sqlite3";
@@ -96,37 +97,28 @@ void *read_eps_thread(void *arg)
 		next.tv_sec += 60;
 
 		int8_t err = 0;
-		uint8_t retry_count = READ_EPS_MAX_RETRIES;
 
-		do {
-			err = eps_init();
+		pthread_mutex_lock(&ctx->lock);
 
-			if (err != 0) {
-				retry_count--;
-				sl_eps2_delay_ms(100U);
-			}
-		} while ((err != 0) && (retry_count > 0U));
+		err = eps_init();
 
-		if (retry_count == 0U) {
+		pthread_mutex_unlock(&ctx->lock);
+
+		if (err != 0U) {
 			sys_log_print_event_from_module(
 				SYS_LOG_ERROR, "eps",
-				"Max retries reached trying to initialize EPS!!!");
+				"Failed when trying to initialize EPS!!!");
 		}
 
 		err = 0;
-		retry_count = READ_EPS_MAX_RETRIES;
 
-		do {
-			err = eps_get_data(&eps_data);
+		pthread_mutex_lock(&ctx->lock);
 
-			if (err != 0) {
-				retry_count--;
-				sl_eps2_delay_ms(100U);
-			}
-		} while ((err != 0) && (retry_count > 0U));
+		err = eps_get_data(&eps_data);
 
-		if ((err == 0) && (retry_count != 0))
-			eps_save_data(&db, &eps_data);
+		pthread_mutex_unlock(&ctx->lock);
+
+		eps_save_data(&db, &eps_data);
 
 		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL);
 	}

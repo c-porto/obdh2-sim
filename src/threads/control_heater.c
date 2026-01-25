@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <unistd.h>
 
 #include <system/context.h>
 #include <system/sys_log.h>
@@ -20,6 +21,8 @@ void *control_heater_thread(void *arg)
 			sys_log_print_event_from_module(
 				SYS_LOG_INFO, "heater",
 				"Satellite is eclipsed! Enabling heaters...");
+
+			pthread_mutex_lock(&ctx->lock);
 
 			if (eps_set_param(SL_EPS2_REG_BAT_HEATER_1_MODE,
 					  SL_EPS2_HEATER_MODE_MANUAL) < 0) {
@@ -48,10 +51,13 @@ void *control_heater_thread(void *arg)
 					SYS_LOG_ERROR, "heater",
 					"Failed to set Heater 2 duty to 50%!");
 			}
+			pthread_mutex_unlock(&ctx->lock);
 		} else {
 			sys_log_print_event_from_module(
 				SYS_LOG_INFO, "heater",
 				"Satellite is not eclipsed! Disabling heaters...");
+
+			pthread_mutex_lock(&ctx->lock);
 
 			if (eps_set_param(SL_EPS2_REG_BAT_HEATER_1_DUTY_CYCLE,
 					  0U) < 0) {
@@ -66,6 +72,7 @@ void *control_heater_thread(void *arg)
 					SYS_LOG_ERROR, "heater",
 					"Failed to set Heater 2 duty to 0%!");
 			}
+			pthread_mutex_unlock(&ctx->lock);
 		}
 
 		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL);
