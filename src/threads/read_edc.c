@@ -23,7 +23,7 @@ static void edc_save_hk(struct db_handle *db, struct payload *edc, edc_hk_t *hk)
 		tm_db_add_entry(db, edc->name, STRINGZ(voltage_supply),
 				(double)hk->voltage_supply);
 		tm_db_add_entry(db, edc->name, STRINGZ(temp), (double)hk->temp);
-		tm_db_add_entry(db, edc->name, STRINGZ(temp),
+		tm_db_add_entry(db, edc->name, STRINGZ(num_rx_ptt),
 				(double)hk->num_rx_ptt);
 	}
 }
@@ -119,6 +119,8 @@ void *read_edc_thread(void *arg)
 						SYS_LOG_ERROR, "edc",
 						"Failed to enable edc!");
 				}
+
+				edc_delay_ms(650U);
 			}
 
 			clock_gettime(CLOCK_MONOTONIC, &now);
