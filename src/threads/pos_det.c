@@ -81,11 +81,16 @@ void *pos_det_thread(void *arg)
 				(bool)is_satellite_in_brazil(lat, lon);
 			pthread_mutex_unlock(&ctx->lock);
 
+			if (ctx->cond.in_brazil)
+				sys_log_print_event_from_module(
+					SYS_LOG_INFO, "pos", "In Brazil!");
+
 			if (db.handle) {
 				tm_db_add_entry(&db, "pos_det", "lat", lat);
 				tm_db_add_entry(&db, "pos_det", "lon", lon);
 				tm_db_add_entry(&db, "pos_det", "alt", alt);
-				tm_db_add_entry(&db, "pos_det", "eclipsed", (double)my_orbit.eclipsed);
+				tm_db_add_entry(&db, "pos_det", "eclipsed",
+						(double)my_orbit.eclipsed);
 			}
 		} else {
 			sys_log_print_event_from_module(
